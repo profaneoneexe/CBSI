@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+
+namespace cBook
+{
+    public partial class ListofCustomer : UserControl
+    {
+        database db = new database();
+        private static ListofCustomer _instance;
+        public static ListofCustomer Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new ListofCustomer();
+                return _instance;
+            }
+        }
+        public ListofCustomer()
+        {
+            InitializeComponent();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            String query = "SELECT `customer_id` AS Customer_ID, `customer_Fname` AS Full_Name, `customer_Lname`as Address, `contact_no` as Contact FROM `tbl_customer`";
+            db.displayRecords(query, dgCustomer);
+        }
+
+        private void print_Click(object sender, EventArgs e)
+        {
+            CustomerListcrv s = new CustomerListcrv();
+            ListofCustomer1 f = new ListofCustomer1();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Customer_ID", typeof(string));
+            dt.Columns.Add("Customer_Fname", typeof(string));
+            dt.Columns.Add("Customer_Lname", typeof(string));
+            dt.Columns.Add("contact_no", typeof(string));
+           
+            TextObject Fname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["Fname"];
+           TextObject lname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+
+
+            Fname.Text = database.read;
+            lname.Text = database.read1;
+            //  totalsales.Text = "";
+            for (int i = 0; i < dgCustomer.Rows.Count; i++)
+            {
+                dt.Rows.Add(dgCustomer.Rows[i].Cells[0].Value, dgCustomer.Rows[i].Cells[1].Value, dgCustomer.Rows[i].Cells[2].Value,
+                 dgCustomer.Rows[i].Cells[3].Value);
+                s.Database.Tables["customertbl"].SetDataSource(dt);
+                f.crystalReportViewer1.ReportSource = null;
+                f.crystalReportViewer1.ReportSource = s;
+                s.Refresh();
+            }
+            f.ShowDialog();
+        }
+    }
+}
