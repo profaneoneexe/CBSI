@@ -1,0 +1,130 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class udamage : UserControl
+    {
+        private static udamage _instance;
+        database db = new database();
+        public static udamage Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new udamage();
+                return _instance;
+            }
+        }
+        public udamage()
+        {
+            InitializeComponent();
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udamage_Load(object sender, EventArgs e)
+        {
+            ADD.Enabled = false;
+            insertDatas();
+        }
+
+        public void insertDatas()
+        {
+            String strquery = "select d.Dam_id as ID ,d.Title as TITLE,d.Author as AUTHOR,d.Edition as EDITION,d.Year as YEAR,d.DBook_Quan as QTY,b.Book_quan as StockinQty,d.Orig_price AS PRICE,d.Markdown_Price AS Discounted_Price,d.Remarks from tbl_damagebook d JOIN tbl_Book b on d.Dam_id = b.Book_Code where d.DBook_Quan = 0";
+            db.displayRecords(strquery, dgDamageBook);
+            dgDamageBook.Columns[1].Width = 250;
+
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (dquan.Text == "" || Mprice.Text == "" || Mprice.Text.Equals("0.00") || Mprice.Text.Equals("0.00") || Mprice.Text.Equals(".00"))
+            {
+                MessageBox.Show("Please complete the details");
+            }
+            else if (int.Parse(txtstockin.Text) < (int.Parse(dquan.Text)))
+            {
+                MessageBox.Show("Cannot Exceed with the Stockin Quantity");
+                dquan.Text = "";
+            }
+            else if (double.Parse(Oprice.Text) < (double.Parse(Mprice.Text)))
+            {
+                MessageBox.Show("Markdown price cannot exceed with the Original Price");
+            }
+            else
+            {
+                String strquery = "update tbl_damagebook set title='" + title.Text + "', dbook_quan=" + dquan.Text + ",markdown_price=" + Mprice.Text + ",remarks='" + remarks.Text + "' where Dam_ID=" + dcode.Text + "";
+                db.insertData(strquery);
+
+                string Strq = " update tbl_book set book_quan = book_quan -" + dquan.Text + " where Book_Code=" + dcode.Text + "";
+                db.updateData(Strq);
+                clear();
+            }
+        }
+        void clear()
+        {
+            dcode.Text = "";
+            title.Text = "";
+            author.Text = "";
+            edition.Text = "";
+            year.Text = "";
+            Oprice.Text = "";
+            Mprice.Text = "";
+            remarks.Text = "";
+            dquan.Text = "";
+            txtstockin.Text = "";
+
+        }
+        private void dgDamageBook_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgDamageBook.Rows[i];
+                dcode.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+                Oprice.Text = select.Cells[7].Value.ToString();
+                txtstockin.Text = select.Cells[6].Value.ToString();
+                Mprice.Text = select.Cells[8].Value.ToString();
+                remarks.Text = select.Cells[9].Value.ToString();
+                ADD.Enabled = true;
+
+            }
+        }
+
+        private void label1_Paint(object sender, PaintEventArgs e)
+        {
+            insertDatas();
+        }
+
+        private void ADD_MouseClick(object sender, MouseEventArgs e)
+        {
+            insertDatas();
+        }
+
+        private void groupBox1_Enter_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            clear();
+        }
+    }
+}
