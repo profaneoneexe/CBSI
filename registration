@@ -1,0 +1,118 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class registration : Form
+    {
+        public static String strquery;
+        database db = new database();
+
+        string strQuery = "";
+        int id, accountID;
+
+
+
+        public registration()
+        {
+            InitializeComponent();
+        }
+
+        private void registration_Load(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            string query = "SELECT user from tbl_cashier where user=" + username.Text;
+            string squery = "SELECT contact_no from tbl_cashier where contact_no=" + contact.Text;
+
+
+            if (db.readRecord2(squery) == true)
+            {
+                MessageBox.Show("Contact number exist");
+
+                contact.Text = "";
+            }
+            if (db.readRecord2(query) == true)
+            {
+                MessageBox.Show("Username already exist");
+                username.Text = "";
+            }
+            else
+            {
+
+
+                if (name.Text.Equals("") || lname.Text.Equals("") || contact.Text.Equals("") || username.Text.Equals("") || password.Text.Equals(""))
+                {
+                    MessageBox.Show("Dont leave any empty text fields");
+                }
+
+
+                else
+                {
+
+                    id = db.readRecord("SELECT * FROM tbl_cashier order by cashier_id desc limit 1");
+                    strQuery = "INSERT INTO tbl_cashier VALUES(" + id + ",'" + name.Text + "','" + lname.Text + "','" + contact.Text + "','" + username.Text + "','" + password.Text + "'," + 1 + "," + 2 + ")";
+                    db.insertData(strQuery);
+                    Form1 f = new Form1();
+                    f.Show();
+                    Dispose();
+                }
+            }
+        }
+
+
+
+
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            Dispose();
+        }
+
+        private void contact_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
+       (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+
+            // only allow one decimal point
+          //  if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+          ////  {
+                e.Handled = true;
+         //   }
+        }
+
+        private void contact_KeyPress_1(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
+                (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Form1 f = new Form1();
+            f.Show();
+            Dispose();
+            f.Dispose();
+        }
+
+
+    }
+}
