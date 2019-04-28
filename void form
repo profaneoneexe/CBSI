@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class voidForm : Form
+    {
+        database db = new database();
+        public static string pass;
+        public voidForm()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            cCashier ca = new cCashier();
+            if (db.authenticate(voidItem.Text) == true)
+            {
+                pass = voidItem.Text;
+
+              
+                     this.Hide();
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Dispose();
+        }
+    }
+}
