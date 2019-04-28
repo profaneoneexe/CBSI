@@ -1,0 +1,422 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Globalization;
+
+namespace cBook
+{
+    public partial class stockin : UserControl
+    {
+        private static stockin _instance;
+        database db = new database();
+        int id = 1;
+        int i;
+        int remove;
+        public static string strQuery = "";
+        public string textWithcomma { get; set; }
+        public string textWithoutcomma { get; set; }
+
+        public static stockin Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new stockin();
+                return _instance;
+            }
+        }
+        public stockin()
+        {
+            InitializeComponent();
+        }
+
+        private void stockin_Load(object sender, EventArgs e)
+        {
+
+            stckId1();
+            string date = DateTime.Today.ToString("yyyy-MM-dd");
+            ins1();
+
+            addQuan.Columns[1].Width = 200;
+            DgConfirm.Columns[1].Width = 200;
+
+          //  btnremove.Enabled = false;
+            button4.Enabled = false;
+          //  btnconfirm.Enabled = false;
+
+        }
+
+
+
+        void ins1()
+        {
+            String strquery = "Select b.Book_code as BookID,b.Book_title as Title,b.Book_author as Author,b.Book_Edition as Edition,b.Book_year as Year,b.Book_quan as QTY,b.Book_price as Price,s.Supplier, c.Category from tbl_book b join tbl_supplier s join tbl_category c where s.supplier_ID=b.supplier_ID and c.category_ID=b.category_ID and b.book_quan <1";
+            //"Select b.Book_code as BookID,b.Book_title as Title,b.Book_author as Author,b.Book_Edition as Edition,b.Book_year as BookYear,b.Book_quan as QTY,b.Book_price as Price,s.Supplier, c.Category from tbl_book b join tbl_supplier s join tbl_category c where s.supplier_ID=b.supplier_ID and c.category_ID=b.category_ID and b.Book_quan > 1";
+            db.displayRecords(strquery, addQuan);
+        }
+
+
+        void clear()
+        {
+            code.Text = "";
+            title.Text = "";
+            author.Text = "";
+            edition.Text = "";
+            year.Text = "";
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            clear();
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+            //String strquery = "Insert into tbl_damagebook (Dam_id,Title,Author,Edition,Year,Quantity) values("+id+",'" + title .Text +"','"+author .Text +"','"+edition .Text +"','"+year .Text +"',"+damBook  .Text +")";
+            //db.insertData(strquery );
+            //clear1();
+        }
+
+        void clear1()
+        {
+            code.Text = "";
+            title.Text = "";
+            author.Text = "";
+            edition.Text = "";
+            year.Text = "";
+            quan.Text = "";
+            price.Text = "";
+            supplier.Text = "";
+            category.Text = "";
+
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void addQuan_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = addQuan.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+                price.Text = select.Cells[6].Value.ToString();
+                supplier.Text = select.Cells[7].Value.ToString();
+                category.Text = select.Cells[8].Value.ToString();
+                button4.Enabled = true;
+
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (quan.Text.Equals("") || price.Text.Equals(""))
+            {
+                MessageBox.Show("Please Input values");
+            }
+            else if (quan.Text.StartsWith("-") || price.Text.StartsWith("-") || price.Text.Equals("0") || price.Text.Equals("0.00") || price.Text.Equals(".00"))
+            {
+                MessageBox.Show("Please Input properly");
+            }
+            else
+            {
+
+                DgConfirm.Rows.Add(code.Text, title.Text, author.Text, edition.Text, year.Text, quan.Text, price.Text, supplier.Text);
+                button4.Enabled = false;
+
+            }
+
+            //  DateTime date = DateTime.Today;
+            //   string date1 = date.ToString("yyyy-MM-dd");
+
+            //  strQuery = "Insert into tbl_damagebook (Title,Author,Edition,Year,DBook_Quan,Date)  values('" + title.Text + "','" + author.Text + "','" + edition.Text + "','" + year.Text + "'," + damBook.Text + ",'" + date1 + "')";
+            //  db.insertData1(strQuery );
+
+
+            //db.insertData(strquery );
+            clear1();
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            clear1();
+        }
+
+        private void button2_Click_2(object sender, EventArgs e)
+        {
+            String str = "";
+            DateTime date1 = DateTime.Today;
+            string date2 = date1.ToString("yyyy-MM-dd");
+            string query = "SELECT * FROM tbl_stockin_items where stockin_ID=" + No.Text;
+            if (db.readRecord2(query) == true)
+            {
+                MessageBox.Show("Please input different Stockin No");
+                No.Text = "";
+
+            }
+            else
+            {
+
+
+
+                db.insertData1("insert into tbl_stockin_items values(" + stckId.Text + "," + No.Text + "," + "now()" + ")");
+
+                for (int i = 0; i < DgConfirm.Rows.Count; i++)
+                {
+
+
+                    db.insertData1("Insert into tbl_stockindetails(stockitem_ID,stock_ID,Book_Code,Title,quantity_received,Price) values (" + stckId.Text + "," + No.Text + "," + DgConfirm.Rows[i].Cells[0].Value + ",'" + DgConfirm.Rows[i].Cells[1].Value + "'," + DgConfirm.Rows[i].Cells[5].Value.ToString() + "," + DgConfirm.Rows[i].Cells[6].Value.ToString() + ")");
+                    db.updateData1("update tbl_book set book_quan =" + DgConfirm.Rows[i].Cells[5].Value.ToString() + " where book_code=" + DgConfirm.Rows[i].Cells[0].Value.ToString());
+                    db.updateData1("update tbl_book set book_price=" + DgConfirm.Rows[i].Cells[6].Value.ToString() + " where book_code=" + DgConfirm.Rows[i].Cells[0].Value.ToString());
+                    db.updateData1("update tbl_damagebook set Orig_price = " + DgConfirm.Rows[i].Cells[6].Value.ToString() + "where dam_id = " + DgConfirm.Rows[i].Cells[0].Value.ToString());
+
+
+                }
+            }
+            stckId1();
+            No.Text = "";
+         //   btnconfirm.Enabled = false;
+          //  btnremove.Enabled = false;
+            ins1();
+            DgConfirm.Rows.Clear();
+        }
+        public void insert()
+        {
+            //  String strquery = "Select b.Book_code,b.Book_title,b.Book_author,b.Book_Edition,b.Book_year,b.Book_quan,b.Book_price,s.Supplier, c.Category from tbl_book b join tbl_supplier s join tbl_category c where s.supplier_ID=b.supplier_ID and c.category_ID=b.category_ID";
+            // db.displayRecords(strquery, addQuan );
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Paint(object sender, PaintEventArgs e)
+        {
+            insert();
+        }
+
+        private void stckId_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+
+
+        }
+
+        private void button2_MouseClick(object sender, MouseEventArgs e)
+        {
+            stckId1();
+        }
+        void stckId1()
+        {
+            stckId.Text = db.readRecord("select * from tbl_stockin_items order by stockin_item_id desc limit 1").ToString();
+
+        }
+        private void quan_TextChanged(object sender, EventArgs e)
+        {
+            Invalid(quan.Text, quan);
+        }
+        void Invalid(string input, TextBox tbox)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char ch = input[i];
+                if (char.IsLetter(ch))
+                {
+                    MessageBox.Show("Input Numbers Only!");
+                    tbox.Text = "";
+                }
+            }
+        }
+
+        private void groupBox1_Enter_1(object sender, EventArgs e)
+        {
+
+        }
+
+        //  private void price_TextChanged(object sender, EventArgs e)
+        //  {
+        //   if (price.Text == "")
+        // {
+        //      price.Text = null;
+        //   textWithcomma = "0"; //this property maintain the content of textbox with comma
+        //  textWithoutcomma = "0";  //this property maintain the content of textbox without comma
+        //  }
+        //  else
+        // {
+        //   if (price.Text != "")
+        //  {
+        //  double d = Convert.ToDouble(skipComma(price.Text));
+        //  price.Text = d.ToString("#,#",
+        //   System.Globalization.CultureInfo.InvariantCulture);
+        // textWithcomma = price.Text;//property maintain content of textbox with comma
+        // textWithoutcomma = skipComma(price.Text);
+        //property maintain content of textbox without comma
+        //  }
+        //  }
+        //  price.Select(price.Text.Length, 0);
+        // Invalid(price.Text, price);
+        // }
+
+        private void label11_Paint(object sender, PaintEventArgs e)
+        {
+            stckId1();
+        }
+
+        private void button2_Paint(object sender, PaintEventArgs e)
+        {
+            stckId1();
+        }
+
+        private void label9_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void addQuan_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label2_Paint(object sender, PaintEventArgs e)
+        {
+            ins1();
+        }
+        // public string skipComma(string str)
+        //  {
+        //   string[] ss = null;
+        //  string strnew = "";
+        //  if (str == "")
+        //  {
+        //   strnew = "0";
+        //  }
+        // else
+        //  {
+        //      ss = str.Split(',');
+        //    for (int i = 0; i < ss.Length; i++)
+        //   {
+        //      strnew += ss[i];
+        //  }
+        // }//
+        // return strnew;
+        // }
+
+        //private void price_KeyPress(object sender, KeyPressEventArgs e)
+        // {
+        //   if ((e.KeyChar < 48 || e.KeyChar > 57) && e.KeyChar != 8)
+        // {
+        // e.Handled = true;
+        // }
+        // }
+
+        private void addQuan_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void button1_Click_2(object sender, EventArgs e)
+        {
+
+
+            DgConfirm.Rows.RemoveAt(i);
+
+
+        }
+
+        private void DgConfirm_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow row = DgConfirm.Rows[i];
+                btnremove.Enabled = true;
+                btnconfirm.Enabled = true;
+            }
+        }
+
+        private void btnremove_Click(object sender, EventArgs e)
+        {
+            DgConfirm.Rows.RemoveAt(remove);
+        }
+
+        private void DgConfirm_CellClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+            remove = e.RowIndex;
+            if (remove >= 0)
+            {
+                DataGridViewRow row = DgConfirm.Rows[remove];
+              //  btnremove.Enabled = true;
+              
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
