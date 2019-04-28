@@ -1,0 +1,106 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class uInv_Sales : UserControl
+    {
+        database db = new database();
+        public static string supply;
+        private static uInv_Sales _instance;
+        public static uInv_Sales Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new uInv_Sales();
+                return _instance;
+            }
+        }
+        public uInv_Sales()
+        {
+            InitializeComponent();
+        }
+
+        private void uInv_Sales_Load(object sender, EventArgs e)
+        {
+            //  stockin1();
+
+            button1.Enabled = false;
+           
+        }
+
+        public void stockin1()
+        {
+            String strquery = "Select *from tbl_stockin_items";
+           // String strquery = "Select s.sup_code as Supply_NO,s.Sup_date as Date,sp.supplier as Supplier,c.first_name as Cashier from tbl_supply s join tbl_supplier sp join tbl_cashier c where s.supplier_id=sp.supplier_id and s.cashier_id=c.cashier_id";
+            db.displayRecords(strquery, dgInSales);
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            String strquery = "select stock_ID AS DR_No,Book_Code AS BOOKCODE,	Title,	quantity_received AS QTY from tbl_stockindetails where stockitem_id=" + supply_code.Text;
+            db.displayRecords(strquery, dgView);
+            dgView.Columns[2].Width = 250;
+            dgView.Columns[0].Width = 85;
+            dgView.Columns[1].Width = 90;
+            dgView.Columns[3].Width = 90;
+
+        }
+
+        private void dgInSales_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgInSales.Rows[i];
+                supply_code.Text = select.Cells[0].Value.ToString();
+                button1.Enabled = true;
+            }
+        }
+
+        private void button1_MouseClick(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void label1_Paint(object sender, PaintEventArgs e)
+        {
+          //  stockin1();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.button2.BackColor = (button2.BackColor = Color.Red);
+        }
+
+        private void button2_Paint(object sender, PaintEventArgs e)
+        {
+            stockin1();
+           
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string dateFrom1 = dateTimePicker1.Value.ToString("yyyy-MM-dd");
+            string dateTo1 = dateTimePicker2.Value.ToString("yyyy-MM-dd");
+
+            string strQuery = "select * from tbl_stockin_items where date between '" + dateFrom1 + "' and '" + dateTo1 + "' order by stockin_item_id";
+
+            db.displayRecords(strQuery, dgInSales );
+        }
+
+        private void uInv_Sales_MouseHover(object sender, EventArgs e)
+        {
+            this.button2.BackColor = (button2.BackColor = Color.Gray);
+        }
+    }
+}
