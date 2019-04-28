@@ -1,0 +1,254 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class cProdControl : UserControl
+    {
+        database db = new database();
+        private static cProdControl _instance;
+      
+        public static cProdControl Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new cProdControl();
+                return _instance;
+            }
+        }
+        public cProdControl()
+        {
+            InitializeComponent();
+        }
+
+        private void cProdControl_Load(object sender, EventArgs e)
+        {
+            prodcontrol1();
+            dmprodcontrol1();
+            DGPanelView.Show();
+            dmDgPanelView.Hide();
+            number();
+            db.loadToComboBox("Select * from tbl_typebook", cboSelect);
+           
+        }
+        void number()
+        {
+            textBox1.Text = db.readRecord("select * from tbl_prodcontrol order by id desc limit 1").ToString();
+        }
+
+        void prodcontrol1()
+        {
+            String strquery = "Select b.book_code as Code,b.book_title as Title,b.book_author as Author,b.book_edition as Edition,b.book_year as Year,b.book_quan as QTY,b.book_price as Price,c.Category,s.Supplier from tbl_book b join tbl_category c join tbl_supplier s where c.category_id=b.category_id and s.supplier_id=b.supplier_id";
+          
+            db.displayRecords(strquery,DGPanelView);
+            DGPanelView.Columns[1].Width = 150;
+        }
+        void dmprodcontrol1()
+        {
+            String strquery = "Select dam_id,Title,Author,Edition,Year,dbook_quan,MarkDown_Price from tbl_damagebook";
+
+            db.displayRecords(strquery, dmDgPanelView);
+            DGPanelView.Columns[1].Width = 150;
+        }
+
+        private void label9_Paint(object sender, PaintEventArgs e)
+        {
+            prodcontrol1();
+        }
+
+        private void DGPanelView_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = DGPanelView.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+              //  textBox2.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+                supplier.Text = select.Cells[7].Value.ToString();
+                category.Text = select.Cells[8].Value.ToString();
+
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (code.Text.Equals("") && title.Text.Equals("") && author.Text.Equals("") && edition.Text.Equals("") && year.Text.Equals("") && category.Text.Equals("") && supplier.Text.Equals("") && price.Text.Equals("") && quan.Text.Equals(""))
+            {
+                MessageBox.Show("Theres something Wrong with your Inputs");
+            }else if (quan.Text.Equals("") && price.Text.Equals(""))
+            {
+                MessageBox.Show("Theres something Wrong with your Inputs");
+            }else if (quan.Text.Equals(""))
+            {
+                MessageBox.Show("Theres something Wrong with your Inputs");
+            }else if (price.Text.Equals(""))
+            {
+                MessageBox.Show("Theres something Wrong with your Inputs");
+            }
+            else
+            {
+               
+                DateTime date = DateTime.Today;
+                string date1 = date.ToString("yyyy-MM-dd");
+                String strq = "update tbl_book set book_quan=book_quan+ " + quan.Text + ",book_price=" + price.Text + " where book_code=" + code.Text + " and book_title='"+title.Text+"'";
+                db.updateData(strq);
+
+                String strq1 = "update tbl_damagebook set dbook_quan=dbook_quan+ " + quan.Text + ",markdown_price=" + price.Text + " where dam_id=" + code.Text + " and title='"+title.Text+"'";
+                db.updateData1(strq1);
+
+               
+
+                db.insertData1("insert into tbl_prodcontrol values (" + textBox1.Text + "," + code.Text + ",'" + title.Text + "','" + author.Text + "'," + quan.Text + "," + price.Text + ",'" + date1 + "')");
+                clear();
+            }
+            //  for (int i = 0; i < DGPanelView.Rows.Count; i++)
+            ///  {
+
+            //     db.updateData1("update tbl_book set book_quan=book_quan + " + DGPanelView.Rows[i].Cells[5].Value.ToString() + " where book_code=" + DGPanelView.Rows[i].Cells[0].Value.ToString());
+            //     db.updateData1("update tbl_book set book_price=" + DGPanelView.Rows[i].Cells[6].Value.ToString() + " where book_code=" + DGPanelView.Rows[i].Cells[0].Value.ToString());
+            //  }
+        }
+         void clear()
+        {
+            code.Text = "";
+            title.Text = "";
+            author.Text = "";
+            edition.Text = "";
+            year.Text = "";
+            supplier.Text = "";
+            category.Text = "";
+            quan.Text = "";
+            price.Text = "";
+        }
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Paint(object sender, PaintEventArgs e)
+        {
+      
+        }
+
+        private void label6_MouseClick(object sender, MouseEventArgs e)
+        {
+    
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_MouseClick(object sender, MouseEventArgs e)
+        {
+            prodcontrol1();
+            dmprodcontrol1();
+            number();
+        }
+
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+           String strquery = " Select b.book_code,b.book_title,b.book_author,b.book_edition,b.book_year,b.book_quan,b.book_price,c.category,s.supplier from tbl_book b "
+                +"join tbl_category c join tbl_supplier s where c.category_id = b.category_id and s.supplier_id = b.supplier_id and b.book_code like '%" + txtSearch.Text + "%'";
+            db.displayRecords(strquery, DGPanelView);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            clear();
+        }
+        void Invalid(string input, TextBox tbox)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char ch = input[i];
+                if (char.IsLetter(ch))
+                {
+                    MessageBox.Show("Input Numbers Only!");
+                    tbox.Text = "";
+                }
+            }
+        }
+
+        private void quan_TextChanged(object sender, EventArgs e)
+        {
+            Invalid(quan.Text,quan);
+        }
+
+        private void price_TextChanged(object sender, EventArgs e)
+        {
+            Invalid(price.Text, price);
+        }
+
+        private void cboSelect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+          
+        }
+
+        private void select1_Click(object sender, EventArgs e)
+        {
+            String nd = "Non Damage Book";
+            String d = "Damage Book";
+
+            if (cboSelect.Text.Equals(d))
+            {
+                DGPanelView.Hide();
+                dmDgPanelView.Show();
+                cat.Hide();
+                category.Hide();
+                sup.Hide();
+                supplier.Hide();
+                clear();
+            }
+            else if (cboSelect.Text.Equals(nd))
+            {
+                dmDgPanelView.Hide();
+                DGPanelView.Show();
+                cat.Show();
+                category.Show();
+                sup.Show();
+                supplier.Show();
+                clear();
+            }
+        }
+
+        private void cboSelect_MouseClick(object sender, MouseEventArgs e)
+        {
+         
+        }
+
+        private void dmDgPanelView_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dmDgPanelView.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+              
+
+            }
+        }
+
+        private void label2_MouseClick(object sender, MouseEventArgs e)
+        {
+            clear();
+        }
+    }
+}
