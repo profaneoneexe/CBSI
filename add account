@@ -1,0 +1,163 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class uAccount : UserControl
+    {
+        database db = new database();
+        private static uAccount _instance;
+        public static uAccount Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new uAccount();
+                return _instance;
+            }
+        }
+        public uAccount()
+        {
+            InitializeComponent();
+        }
+        public void loadtoDgAcc()
+        {
+
+
+        }
+
+        private void uAccount_Load(object sender, EventArgs e)
+        {
+            button1.Enabled = false;
+            clear1();
+            insert1();
+        }
+        public void insert1()
+        {
+            String strquery = "Select c.cashier_id,c.First_name,c.Last_name,c.Contact_no,c.user,c.pass,s.status,a.user_type from tbl_cashier c join tbl_status s join tbl_administrator a where s.status_id=c.status_id and a.User_type_ID=c.User_type_ID";
+            //  String strquery = "Select c.id,c.Name,c.Last_name,c.Address,c.user,c.pass,s.status from tbl_cashier c join tbl_status s group by c.id";
+            db.displayRecords(strquery, dGAccount);
+
+
+        }
+       
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            String strquery = "Update tbl_cashier set user='" + user.Text + "',pass='" + pass.Text + "' where id=" + id.Text + "";
+            db.updateData(strquery);
+            insert1();
+            clear();
+
+        }
+
+        void clear()
+        {
+            id.Text = "";
+            name.Text = "";
+            lname.Text = "";
+            con.Text = "";
+            user.Text = "";
+            pass.Text = "";
+
+        }
+
+        void clear1()
+        {
+            db.loadToComboBox("Select * from tbl_status", cbostatus);
+            db.loadToComboBox("Select * from tbl_administrator", cboPosition );
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            clear();
+        }
+
+     
+
+        private void dGAccount_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+       
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dGAccount.Rows[i];
+                id.Text = select.Cells[0].Value.ToString();
+                name.Text = select.Cells[1].Value.ToString();
+                lname.Text = select.Cells[2].Value.ToString();
+                con.Text = select.Cells[3].Value.ToString();
+                user.Text = select.Cells[4].Value.ToString();
+                pass.Text = select.Cells[5].Value.ToString();
+                cbostatus.Text = select.Cells[6].Value.ToString();
+                cboPosition.Text = select.Cells[7].Value.ToString();
+                button1.Enabled = true;
+
+            
+        }
+    }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            
+            String strquery = "Update tbl_cashier set user='" + user.Text + "',pass='" + pass.Text + "',contact_no='"+con.Text+"',"+
+                "status_id="+cbostatus .SelectedValue +" ,user_type_id="+cboPosition.SelectedValue+" where cashier_ID=" + id.Text + "";
+            db.updateData(strquery);
+            insert1();
+            clear();
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+
+            clear();
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void contact_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
