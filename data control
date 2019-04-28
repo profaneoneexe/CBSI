@@ -1,0 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class uDataControl : UserControl
+    {
+        private static uDataControl _instance;
+
+        public static uDataControl Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new uDataControl();
+                return _instance;
+            }
+        }
+        public uDataControl()
+        {
+            InitializeComponent();
+        }
+
+        private void uDataControl_Load(object sender, EventArgs e)
+        {
+      
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.button1.BackColor = (button1.BackColor = Color.Red);
+            this.button2.BackColor = (button2.BackColor = Color.LightGray);
+
+            backupForm bf = new backupForm();
+            bf.Show();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.button1.BackColor = (button1.BackColor = Color.LightGray);
+            this.button2.BackColor = (button2.BackColor = Color.Red);
+            Restore r = new Restore();
+            r.Show();
+        }
+    }
+}
