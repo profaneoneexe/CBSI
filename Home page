@@ -1,0 +1,273 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.Runtime.InteropServices;
+namespace cBook
+{
+    public partial class cHomePage : UserControl
+    {
+        database db = new database();
+        public static String strquery = "";
+        private static cHomePage _instance;
+        int remove;
+        public static cHomePage Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new cHomePage();
+                return _instance;
+            }
+        }
+        public cHomePage()
+        {
+            InitializeComponent();
+        }
+
+
+
+        private void cHomePage_Load(object sender, EventArgs e)
+        {
+            // DGRemain.Columns[0].Width = 100;
+
+            title.Hide();
+            edition.Hide();
+            code.Hide();
+            remainBOk();
+            remainBOk1();
+            sales1();
+            ok.Enabled = false;
+            qty.Enabled = false;
+            dgHome.Columns[1].Width = 300;
+            dgOrder.Columns[1].Width = 300;
+          
+            btnremove.Enabled = false;
+            Prnt.Enabled = false;
+
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        void sales1()
+        {
+            string str = "select Book_Title,sum(qty) as Quantity from tbl_sales_details group by Book_Title order by sum(qty) DESC";
+            db.displayRecords(str, bookSold);
+
+        }
+
+        void remainBOk()
+        {
+            String Strquery = "Select b.Book_code As Code,b.Book_title as Title,b.book_edition as Edition,b.Book_Quan as Quantity,b.Book_price as Price from tbl_book b order by b.book_title ASC";
+
+            db.displayRecords(Strquery, DGRemain);
+            DGRemain.Columns[0].Width = 80;
+            DGRemain.Columns[1].Width = 250;
+            DGRemain.Columns[2].Width = 100;
+            DGRemain.Columns[3].Width = 100;
+            DGRemain.Columns[4].Width = 100;
+        }
+        void remainBOk1()
+        {
+            String Strquery = "Select dam_id As Damage_ID,title as Title,Edition,dbook_Quan as Quantity,markdown_price as Price  from tbl_damagebook order by title ASC";
+            db.displayRecords(Strquery, DGDamRemain);
+            DGDamRemain.Columns[0].Width = 80;
+            DGDamRemain.Columns[1].Width = 250;
+            DGDamRemain.Columns[2].Width = 100;
+            DGDamRemain.Columns[3].Width = 100;
+            DGDamRemain.Columns[4].Width = 100;
+
+        }
+
+        private void cHomePage_Paint(object sender, PaintEventArgs e)
+        {
+
+
+            String str1 = "Select b.book_code as Code,b.book_title as Title,b.book_edition as Edition," +
+                " b.book_quan as Quantity from tbl_book b where b.book_quan <= 10";
+
+            db.displayRecords(str1, dgHome);
+
+        }
+
+        private void dataGridView1_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void label1_Paint(object sender, PaintEventArgs e)
+        {
+            remainBOk();
+        }
+
+        private void label2_Paint(object sender, PaintEventArgs e)
+        {
+            remainBOk1();
+        }
+
+        private void ok_Click(object sender, EventArgs e)
+        {
+
+            if (qty.Text.Equals(""))
+            {
+                MessageBox.Show("Input Quantity");
+            }
+            else if (qty.Text.StartsWith("-"))
+            {
+                MessageBox.Show("Do not Enter Negative sign");
+                qty.Text = "";
+            }
+            else if (int.Parse(qty.Text) <= 0)
+            {
+                MessageBox.Show("Input Number Higher than 0");
+                qty.Text = "";
+            }
+            else
+            {
+                dgOrder.Rows.Add(code.Text, title.Text, edition.Text, qty.Text + " pcs");
+                qty.Text = "";
+                code.Text = "";
+                title.Text = "";
+                edition.Text = "";
+            }
+
+            //,dgHome.Rows[0].Cells[1].Value.ToString(), dgHome.Rows[0].Cells[3].Value.ToString(), qty.Text);
+
+            /**  if (!code.Text.Equals(dgOrder.Rows[0].Cells[0].Value.ToString()))
+              {
+                  MessageBox.Show("Allready Request Ordered!");
+
+              }
+              else
+              {
+                  MessageBox.Show(" Request Ordered!");
+
+              }*/
+
+
+        }
+
+        private void dgHome_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgHome.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                edition.Text = select.Cells[2].Value.ToString();
+
+
+            }
+            ok.Enabled = true;
+            qty.Enabled = true;
+            Prnt.Enabled = true;
+        }
+
+        private void Prnt_Click(object sender, EventArgs e)
+        {
+            crvOrder1();
+            ok.Enabled = false;
+            qty.Enabled = false;
+        }
+
+
+        public void crvOrder1()
+        {
+            CrystalReportOrder rol = new CrystalReportOrder();
+            Form2 f = new Form2();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Code", typeof(string));
+            dt.Columns.Add("Title", typeof(string));
+            dt.Columns.Add("Edition", typeof(string));
+            dt.Columns.Add("Qty_Product_Order", typeof(string));
+
+            TextObject cashier = (TextObject)rol.ReportDefinition.Sections["Section3"].ReportObjects["cashier"];
+            TextObject lname = (TextObject)rol.ReportDefinition.Sections["Section3"].ReportObjects["lname"];
+
+            cashier.Text = database.read;
+            lname.Text = database.read1;
+
+            for (int i = 0; i < dgOrder.Rows.Count; i++)
+            {
+
+                dt.Rows.Add(dgOrder.Rows[i].Cells[0].Value, dgOrder.Rows[i].Cells[1].Value, dgOrder.Rows[i].Cells[2].Value, dgOrder.Rows[i].Cells[3].Value);
+                rol.Database.Tables["order"].SetDataSource(dt);
+                f.crvView.ReportSource = null;
+                f.crvView.ReportSource = rol;
+                rol.Refresh();
+            }
+
+            f.ShowDialog();
+            dgOrder.Rows.Clear();
+            Prnt.Enabled = false;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+
+            dgOrder.Rows.RemoveAt(remove);
+            btnremove.Enabled = false;
+
+        }
+
+        private void dgOrder_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            remove = e.RowIndex;
+            if (remove >= 0)
+            {
+                DataGridViewRow row = dgOrder.Rows[remove];
+                btnremove.Enabled = true;
+                qty.Enabled = false;
+                ok.Enabled = false;
+                Prnt.Enabled = false;
+            }
+        }
+
+        void Invalid(string input, TextBox tbox)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char ch = input[i];
+                if (char.IsLetter(ch))
+                {
+                    MessageBox.Show("Input Numbers Only!");
+                    qty.Text = "";
+
+                }
+            }
+        }
+
+        private void qty_TextChanged(object sender, EventArgs e)
+        {
+            Invalid(qty.Text, qty);
+        }
+
+        private void label5_Paint(object sender, PaintEventArgs e)
+        {
+            sales1();
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
