@@ -1,0 +1,120 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+
+    public partial class Form1 : Form
+    {
+        database db = new database();
+        mainform m = new mainform();
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            if (db.login(user.Text, pass.Text) == true)
+            {
+                this.Hide();
+            }
+            else
+            {
+
+                pass.Text = "";
+            }
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Dispose();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            registration r = new registration();
+            r.Show();
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            forgotPassword fp = new forgotPassword();
+            fp.Show();
+        }
+
+        private void pass_MouseEnter(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void pass_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            
+            
+        }
+
+        private void pass_KeyUp(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void pass_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode==Keys.Enter)
+            {
+                button1.PerformClick();
+            }
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
