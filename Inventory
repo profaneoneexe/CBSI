@@ -1,0 +1,84 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class cInventory : UserControl
+    {
+        database db = new database();
+        private static cInventory  _instance;
+       static uMange u = new uMange();
+        public static cInventory  Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new cInventory ();
+                return _instance;
+            }
+        }
+        public cInventory()
+        {
+            InitializeComponent();
+        }
+
+        private void cInventory_Load(object sender, EventArgs e)
+        {
+            this.button1.BackColor = (button1.BackColor = Color.Gray);
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            String str = "Select * from tbl_book";
+            
+            this.button1.BackColor = (button1.BackColor = Color.Gray);
+            this.button3.BackColor = (button3.BackColor = Color.LightGray);
+
+            if (!panel_inv.Controls.Contains(stockin.Instance))
+            {
+                panel_inv.Controls.Add(stockin.Instance);
+                stockin.Instance.Dock = DockStyle.Fill;
+                stockin.Instance.BringToFront();
+            }
+            else
+                stockin.Instance.BringToFront();
+        }
+
+        private void panel_inv_Paint(object sender, PaintEventArgs e)
+        {
+            if (!panel_inv.Controls.Contains(stockin.Instance))
+            {
+                panel_inv.Controls.Add(stockin.Instance);
+                stockin.Instance.Dock = DockStyle.Fill;
+                stockin.Instance.BringToFront();
+            }
+            else
+                stockin.Instance.BringToFront();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.button1.BackColor = (button1.BackColor = Color.LightGray);
+            this.button3.BackColor = (button3.BackColor = Color.Gray);
+
+            if (!panel_inv.Controls.Contains(udamage .Instance))
+            {
+                panel_inv.Controls.Add(udamage.Instance);
+                udamage.Instance.Dock = DockStyle.Fill;
+                udamage.Instance.BringToFront();
+            }
+            else
+                udamage.Instance.BringToFront();
+        }
+    }
+    
+    
+}
