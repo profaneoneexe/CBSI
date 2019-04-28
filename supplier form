@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class supplierForm : Form
+    {
+        database db = new database();
+        public supplierForm()
+        {
+            InitializeComponent();
+        }
+
+        private void supplierForm_Load(object sender, EventArgs e)
+        {
+            new1();
+        }
+        void new1()
+        {
+            textBox1.Text = db.readRecord("select * from tbl_supplier order by supplier_id desc limit 1").ToString();
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (textBox2.Text.Equals(""))
+            {
+                MessageBox.Show("Please Input Something");
+            }
+            else
+            {
+                String str = "insert into tbl_supplier values (" + textBox1.Text + ",'" + textBox2.Text + "')";
+                db.insertData(str);
+                clear();
+                Dispose();
+            }
+        }
+        void clear()
+        {
+            textBox2.Text = "";
+        }
+
+        private void button1_MouseClick(object sender, MouseEventArgs e)
+        {
+            new1();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Dispose();
+        }
+    }
+}
