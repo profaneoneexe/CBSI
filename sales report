@@ -1,0 +1,191 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.Runtime.InteropServices;
+
+namespace cBook
+{
+    public partial class uSales : UserControl
+    {
+        database db = new database();
+        public static double total;
+        public static int i;
+        public static DataGridViewRow select;
+        private static uSales _instance;
+        public static uSales Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new uSales();
+                return _instance;
+            }
+        }
+        public uSales()
+        {
+            InitializeComponent();
+        }
+
+        private void uSales_Load(object sender, EventArgs e)
+        {
+            btnprint.Enabled = false;
+            btnView.Enabled = false;
+            textBox1.Hide();
+        }
+       
+        void sales1()
+        {
+            String str = "Select s.sales_id as SalesID,s.invoice_no InvoiceNo,s.Totalsales,s.sales_date as Date,ch.First_name as Cashier,c.customer_Fname as Customer from tbl_sales s join tbl_customer c join tbl_cashier ch where ch.cashier_id=s.cashier_id and c.customer_id=s.customer_id ";
+            db.displayRecords(str, dgSales);
+        }
+
+        
+        
+        private void sales_Paint(object sender, PaintEventArgs e)
+        {
+            sales1();
+        }
+
+        private void sales_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            string dateFrom1 = dateFrom.Value.ToString("yyyy-MM-dd");
+            string dateTo1 = dateTo.Value.ToString("yyyy-MM-dd");
+            
+            string strQuery = "select s.sales_ID as SalesID, s.invoice_no as InvoiceNo, s.TotalSales as Totalsales, s.sales_date as Date, ch.first_name as CASHIER, c.customer_Fname as Customer  from tbl_sales s JOIN tbl_customer c ON s.customer_id = c.customer_id JOIN tbl_cashier ch ON s.cashier_ID = ch.cashier_ID where s.sales_date between '" + dateFrom1 + "' and '" + dateTo1 + "' order by s.sales_ID";
+            
+            db.displayRecords(strQuery, dgSales);
+
+            decimal total = 0;
+            for (int i = 0; i < dgSales.Rows.Count; i++)
+            {
+
+                decimal ts = decimal.Parse(dgSales.Rows[i].Cells[2].Value.ToString());
+
+                decimal ts1 = total + ts;
+                total = ts1;
+                totalsales.Text = "" + ts1;
+                string hold = string.Format("{0:n}", total);
+                totalsales.Text = hold;
+                btnprint.Enabled = true;
+
+            }
+            btnView.Enabled = false;
+        }
+        private void refresh_Paint(object sender, PaintEventArgs e) 
+        {
+        
+        }
+
+        private void refresh_MouseClick(object sender, MouseEventArgs e)
+        {
+            sales1();
+            btnView.Enabled = true;
+            btnprint.Enabled = false;
+            totalsales.Text = "";
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            print1();
+            btnprint.Enabled = false;
+            btnView.Enabled = false;
+        }
+    
+        void print1()
+        {
+
+            sales s = new sales();
+            crySalesForm f = new crySalesForm();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("sales_ID", typeof(string));
+            dt.Columns.Add("Invoice_No", typeof(string));
+            dt.Columns.Add("TotalSales", typeof(string));
+            dt.Columns.Add("sales_date", typeof(string));
+            dt.Columns.Add("cashier_id", typeof(string));
+            dt.Columns.Add("customer_id", typeof(string));
+
+            TextObject datefrom = (TextObject)s.ReportDefinition.Sections["Section2"].ReportObjects["datefrom1"];
+            TextObject dateto  = (TextObject)s.ReportDefinition.Sections["Section2"].ReportObjects["dateto1"];
+            TextObject cashier = (TextObject)s.ReportDefinition.Sections["Section5"].ReportObjects["cashier"];
+            TextObject totalsales1 = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["totalsales"];
+            TextObject lname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+
+            datefrom.Text = "" + dateFrom.Text;
+            dateto.Text = "" + dateTo.Text;
+            totalsales1.Text = ""+ totalsales.Text ;
+            cashier.Text = database.read;
+            lname.Text = database.read1;
+            totalsales.Text = "";
+            for (int i = 0; i < dgSales.Rows.Count; i++)
+            {
+                dt.Rows.Add(dgSales.Rows[i].Cells[0].Value, dgSales.Rows[i].Cells[1].Value,dgSales.Rows[i].Cells[2].Value,
+                 dgSales.Rows[i].Cells[3].Value, dgSales.Rows[i].Cells[4].Value, dgSales.Rows[i].Cells[5].Value);
+                s.Database.Tables["sales"].SetDataSource(dt);
+                f.crvSales.ReportSource = null;
+                f.crvSales.ReportSource = s;
+                s.Refresh();
+            }
+            f.ShowDialog();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+          
+            String query = "select Sales_Id,Book_Code,Book_title,qty as Quantity,Sub_total from tbl_sales_details where sales_id ="+textBox1.Text+"";
+            db.displayRecords(query,dg );
+           // dg.Columns[3].Width = 250;
+           
+            btnprint.Enabled = false;
+            btnView.Enabled = false;
+        }
+         
+        
+
+        private void dgSales_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgSales .Rows[i];
+                textBox1.Text = select.Cells[0].Value.ToString();
+
+                btnprint.Enabled = false;
+                btnView.Enabled = true;
+            }
+        }
+
+        private void dg_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void refresh_Click(object sender, EventArgs e)
+        {
+            String query = "select sd.sales_id as BookID,sd.Book_Code,b.Book_Title,b.book_edition as Edition,sd.qty as Quantity,sd.Sub_Total from tbl_sales_details sd join tbl_book b where sd.book_code=b.book_code and sales_id =0000100001001";
+            db.displayRecords(query,dg);
+
+
+        }
+    }
+}
