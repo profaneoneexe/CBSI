@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.Runtime.InteropServices;
+
+namespace cBook
+{
+    public partial class prodControlHistory : UserControl
+    {
+        database db = new database();
+        private static prodControlHistory  _instance;
+        public static prodControlHistory Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new prodControlHistory();
+                return _instance;
+            }
+        }
+        public prodControlHistory()
+        {
+            InitializeComponent();
+        }
+
+        private void prodControlHistory_Load(object sender, EventArgs e)
+        {
+            totalsales.Hide();
+            display12();
+        }
+
+        void display12()
+        {
+            String str1 = "Select id,book_code as BookID,Book_title as Title,book_author as Author,book_quan as QTY,Book_price as Price, Date from tbl_prodcontrol";
+            db.displayRecords(str1, dgcp);
+            dgcp.Columns[0].Width = 80;
+            dgcp.Columns[2].Width = 150;
+
+        }
+
+        private void label1_Paint(object sender, PaintEventArgs e)
+        {
+            display12();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            decimal total = 0;
+            for (int i = 0; i < dgcp.Rows.Count; i++)
+            {
+
+                decimal ts = decimal.Parse(dgcp.Rows[i].Cells[5].Value.ToString());
+
+                decimal ts1 = total + ts;
+                total = ts1;
+                totalsales.Text = "" + ts1;
+                string hold = string.Format("{0:n}", total);
+                totalsales.Text = hold;
+                //  btnprint.Enabled = true;
+
+            }
+            prodViewer inv = new prodViewer();
+            Prod_Control_Form if1 = new Prod_Control_Form();
+            DataTable dt = new DataTable();
+            dt.Columns.Add("id", typeof(string));
+            dt.Columns.Add("Book_Code", typeof(string));
+            dt.Columns.Add("Book_Title", typeof(string));
+            dt.Columns.Add("Book_Author", typeof(string));
+            dt.Columns.Add("Book_Quan", typeof(string));
+            dt.Columns.Add("Book_Price", typeof(string));
+            dt.Columns.Add("Date", typeof(string));
+
+            TextObject cashier = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["cashier"];
+            TextObject lname = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+            TextObject total1 = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["total"];
+
+
+            cashier.Text = database.read;
+            lname.Text = database.read1;
+            total1.Text = totalsales.Text;
+
+            for (int i = 0; i < dgcp.Rows.Count; i++)
+            {
+
+                dt.Rows.Add(int.Parse(dgcp.Rows[i].Cells[0].Value.ToString()), dgcp.Rows[i].Cells[1].Value, dgcp.Rows[i].Cells[2].Value,
+                            dgcp.Rows[i].Cells[3].Value, dgcp.Rows[i].Cells[4].Value, dgcp.Rows[i].Cells[5].Value
+                            , dgcp.Rows[i].Cells[6].Value);
+                inv.Database.Tables["ProductControl"].SetDataSource(dt);
+                if1.prdViewer.ReportSource = null;
+                if1.prdViewer.ReportSource = inv;
+                inv.Refresh();
+
+            }
+            if1.ShowDialog();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            
+        }
+    }
+}
