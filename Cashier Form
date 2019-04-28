@@ -1,0 +1,921 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.Runtime.InteropServices;
+using MySql.Data.MySqlClient;
+using System.Globalization;
+
+namespace cBook
+{
+    public partial class cCashier : UserControl
+    {
+        MySqlConnection conn;
+        MySqlDataAdapter da;
+        //   MySqlDataReader dr;
+        MySqlCommand command;
+        MySqlBackup backup;
+        DataTable dt;
+        string strConn = "datasource=localhost;port=3306;username=root;password=;database=centralbookstore1";
+        private static cCashier _instance;
+
+        database db = new database();
+
+        public static double total;
+
+        public static int i, j, quantity, logout1, count, changeqty;
+        public static int count1;
+
+        public static DataGridViewRow select;
+        public string textWithcomma { get; set; }
+        public string textWithoutcomma { get; set; }
+        public static cCashier Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new cCashier();
+                return _instance;
+            }
+        }
+        public cCashier()
+        {
+            InitializeComponent();
+        }
+
+        private void cCashier_Load(object sender, EventArgs e)
+        {
+            textBox2.Hide();
+            db.loadToComboBox("Select * from tbl_customer", cboCustomer);
+            db.loadToComboBox("Select * from tbl_typebook", cbotypeBook);
+            insertData();
+            dgCashier.Show();
+            dgdamage.Hide();
+            item.Hide();
+            dmagebook2();
+            new1();
+            change1.Enabled = false;
+            void1.Enabled = false;
+            dgdamage.Columns[1].Width = 220;
+
+
+
+
+        }
+
+
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        void new1()
+        {
+            lblID.Text = db.readRecord("select * from tbl_sales order by sales_id desc limit 1").ToString();
+
+        }
+        public void insertData()
+        {
+            String strquery = "Select Book_code as BookID,Book_title as Title,Book_author as Author,Book_edition as Edition,book_year as Year,Book_quan as QTY,Book_price as Price from tbl_book where Book_quan > 0";
+            db.displayRecords(strquery, dgCashier);
+            dgCashier.Columns[1].Width = 220;
+
+        }
+
+
+
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button6_MouseClick(object sender, MouseEventArgs e)
+        {
+
+        }
+
+
+
+        private void subTotal_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        void invalidInput(string input, TextBox tbox)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char ch = input[i];
+                if (char.IsLetter(ch))
+                {
+                    MessageBox.Show("Input Numbers Only!");
+                    tbox.Text = "";
+                }
+            }
+        }
+
+        void clear1()
+        {
+            code.Text = "";
+            title.Text = "";
+            author.Text = "";
+            edition.Text = "";
+            year.Text = "";
+            quan.Text = "";
+            price.Text = "";
+            textBox1.Text = "";
+            subTotal.Text = "0.00";
+        }
+        public void Total()
+        {
+            try
+            {
+                double total1 = 0;
+                if (DGAddToCart.Rows.Count == 0)
+                {
+                    sum1.Text = "0.00";
+                }
+                else
+                {
+                    for (int i = 0; i < DGAddToCart.Rows.Count; i++)
+                    {
+                        total1 += double.Parse(DGAddToCart.Rows[i].Cells[7].Value.ToString());
+                    }
+                    string hold = string.Format("{0:#,###,###.##}", total1);
+                    sum1.Text = hold;
+                    total = total1;
+                    if (!sum1.Text.Contains("."))
+                    {
+                        sum1.Text += ".00";
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message.ToString());
+            }
+
+        }
+
+        private void textBox10_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+        private void sum1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+
+            if (add1.Text == "Change Quantity")
+            {
+
+                //select = DGAddToCart.Rows[i];
+                //select.Cells[5].Value = quan.Text;
+                //select.Cells[7].Value = subTotal.Text;
+                if (quan.Text == "")
+                {
+                    MessageBox.Show("Input Quantity", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    logout1 = 0;
+                }
+                else if (quan.Text.StartsWith("-"))
+                {
+                    MessageBox.Show("Do not input neagtive quntity", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    logout1 = 0;
+                }
+                else if (int.Parse(textBox1.Text) < int.Parse(quan.Text))
+                {
+                    MessageBox.Show("Not enough Stocks!", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    logout1 = 0;
+                }
+                else
+                {
+                    DGAddToCart.Rows.Add(code.Text, title.Text, author.Text, edition.Text, year.Text, quan.Text, price.Text, subTotal.Text);
+                    String str = "update tbl_book set book_quan=book_quan - " + quan.Text + " where book_code=" + code.Text + " and book_title='" + textBox2.Text + "'";
+                    db.updateData1(str);
+                    String srt = "update tbl_damagebook set dbook_quan=dbook_quan - " + quan.Text + " where dam_id=" + code.Text + " and title='" + textBox2.Text + "'";
+                    db.updateData1(srt);
+                    this.add1.BackColor = (add1.BackColor = Color.LightGray);
+                    add1.Text = "ADD TO CART";
+                    button2.Enabled = true;
+                    DGAddToCart.Enabled = true;
+                    dgdamage.Enabled = true;
+                    dgCashier.Enabled = true;
+                    button6.Enabled = true;
+                    textBox2.Text = "";
+                    Total();
+                    clear1();
+                }
+
+
+
+
+
+            }
+            else
+            {
+                if (quan.Text == "")
+                {
+                    MessageBox.Show("Input Quantity", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    logout1 = 0;
+                }
+                else if (quan.Text.StartsWith("-"))
+                {
+                    MessageBox.Show("Do not input neagtive quntity", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    logout1 = 0;
+                }
+                else if (int.Parse(textBox1.Text) < int.Parse(quan.Text))
+                {
+                    MessageBox.Show("Not enough Stocks!", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    logout1 = 0;
+                }
+                else
+                {
+                    DGAddToCart.Rows.Add(code.Text, title.Text, author.Text, edition.Text, year.Text, quan.Text, price.Text, subTotal.Text);
+
+
+                    if (add1.Text == "ADD TO CART")
+                    {
+                        String strq = "update tbl_book set book_quan=book_quan - " + quan.Text + " where book_code=" + code.Text + "";
+                        db.updateData1(strq);
+                        count++;
+                    }
+                    else if (add1.Text == "add to cart")
+                    {
+                        String str1 = "update tbl_damagebook set dbook_quan=dbook_quan - " + quan.Text + " where dam_id=" + code.Text + "";
+                        db.updateData1(str1);
+                        count++;
+                    }
+
+                    item.Text = "" + count;
+                    //db.updateData1("update tbl_book set book_quan=book_quan  -" + dgCashier.Rows[i].Cells[5].Value.ToString() + " where book_code=" + dgCashier.Rows[i].Cells[0].Value.ToString());
+                    //  db.updateData1("update tbl_book set book_price=" + DgConfirm.Rows[i].Cells[6].Value.ToString() + " where book_code=" + DgConfirm.Rows[i].Cells[0].Value.ToString());
+                    this.add1.BackColor = (add1.BackColor = Color.LightGray);
+                    logout1++;
+                }
+                Total();
+                clear1();
+
+            }
+
+        }
+
+        private void dgCashier_CellClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgCashier.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+                textBox1.Text = select.Cells[5].Value.ToString();
+                price.Text = select.Cells[6].Value.ToString();
+
+
+            }
+
+
+
+        }
+
+        private void quan_TextChanged_1(object sender, EventArgs e)
+        {
+
+            invalidInput(quan.Text, quan);
+            try
+            {
+                double total = 0;
+                total = double.Parse(price.Text) * double.Parse(quan.Text);
+                string hold = string.Format("{0:n}", total);
+                subTotal.Text = hold;
+                if (quan.Text == "")
+                {
+                    quan.Text = "0";
+                    subTotal.Text = "0.00";
+                }
+                else if (!subTotal.Text.Contains("."))
+                {
+                    subTotal.Text += ".00";
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Paint_1(object sender, PaintEventArgs e)
+        {
+
+            insertData();
+
+
+        }
+
+        private void cash_TextChanged_1(object sender, EventArgs e)
+        {
+            invalidInput(cash.Text, cash);
+            try
+            {
+                //   string hold1 = string.Format("{0:#,###}", double.Parse(cash.Text));
+
+                //     cash.Text = hold1;
+                double total = 0.00;
+
+                total = double.Parse(cash.Text) - double.Parse(sum1.Text);
+                string hold = string.Format("{0:##,###,###.##}", total);
+                txtchange.Text = hold;
+
+                //  if (txtchange.Text == "")
+                // {
+                //        txtchange.Text = "0.00";
+                //  }
+                if (double.Parse(cash.Text) < double.Parse(sum1.Text))
+                {
+                    txtchange.Text = "0.00";
+                }
+                else if (double.Parse(cash.Text) > double.Parse(sum1.Text))
+                {
+                    // txtchange.Text = ".00";
+                    txtchange.Text = hold + ".00";
+                }
+                else if (double.Parse(cash.Text) == double.Parse(sum1.Text))
+                {
+
+                    txtchange.Text = "0.00";
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            if (cash.Text == "")
+            {
+                cash.Text = null;
+                textWithcomma = "0"; //this property maintain the content of textbox with comma
+                textWithoutcomma = "0";  //this property maintain the content of textbox without comma
+            }
+            else
+            {
+                if (cash.Text != "")
+                {
+                    double d = Convert.ToDouble(skipComma(cash.Text));
+                    cash.Text = d.ToString("#,#",
+                      System.Globalization.CultureInfo.InvariantCulture);
+                    textWithcomma = cash.Text;//property maintain content of textbox with comma
+                    textWithoutcomma = skipComma(cash.Text);
+                    //property maintain content of textbox without comma
+                }
+            }
+            cash.Select(cash.Text.Length, 0);
+
+
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            String strquery = "Select Book_code as BookID, Book_title as Title, Book_author as Author, Book_edition as Edition, Book_year as Year, Book_quan as QTY, Book_price as Price from tbl_book where book_code like '%" + txtSearch.Text + "%' and book_quan > 0";
+            db.displayRecords(strquery, dgCashier);
+
+        }
+
+        private void label10_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button7_MouseClick(object sender, MouseEventArgs e)
+        {
+            insertData();
+            dmagebook2();
+            item.Text = "" + count;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+
+
+        }
+
+        private void DGAddToCart_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            i = e.RowIndex;
+            if (i >= 0)
+            {
+                // DataGridViewRow select1 = dgCashier.Rows[i];
+                DataGridViewRow select = DGAddToCart.Rows[i];
+                //code.Text = select.Cells[0].Value.ToString();
+
+                //author.Text = select.Cells[2].Value.ToString();
+                textBox2.Text = select.Cells[1].Value.ToString();
+                //    textBox1.Text = select.Cells[5].Value.ToString();
+                //year.Text = select.Cells[4].Value.ToString();
+                clear1();
+                void1.Enabled = true;
+                change1.Enabled = true;
+
+                this.void1.BackColor = (void1.BackColor = Color.Red);
+                this.change1.BackColor = (change1.BackColor = Color.Red);
+            }
+        }
+
+        private void button4_MouseClick(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            if (txtInvoice.Text == "")
+            {
+                MessageBox.Show("fill all inputs", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else if (cash.Text == "")
+            {
+                MessageBox.Show("Insufficient Amount", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else if (double.Parse(sum1.Text) > double.Parse(cash.Text))
+            {
+                MessageBox.Show("Insufficient Amount", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
+            }
+
+            else
+            {
+                string query = "SELECT * FROM tbl_sales where Invoice_No=" + txtInvoice.Text;
+                if (db.readRecord2(query) == true)
+                {
+                    MessageBox.Show("Please input different Invoice No");
+
+                }
+                else
+                {
+                    int id = db.readRecord("Select * FROM tbl_sales order by sales_ID desc limit 1");
+                    DateTime date1 = DateTime.Today;
+                    string date2 = date1.ToString("yyyy-MM-dd");
+                    MessageBox.Show("Product Purchased Completed");
+
+                    string value = Convert.ToDecimal(double.Parse(sum1.Text)).ToString("0.00");
+                    db.insertData1("insert into tbl_sales values (" + lblID.Text + "," + txtInvoice.Text + "," + cboCustomer.SelectedValue + "," + value + ",now()," + database.id + ")");
+
+                    for (int i = 0; i < DGAddToCart.Rows.Count; i++)
+                    {
+                        string value1 = Convert.ToDecimal(double.Parse(DGAddToCart.Rows[i].Cells[7].Value.ToString())).ToString("0.00");
+                        db.insertData1("Insert into tbl_sales_details (sales_id,book_code,book_title,qty,sub_total)  VALUES(" + lblID.Text + "," + DGAddToCart.Rows[i].Cells[0].Value + ",'" + DGAddToCart.Rows[i].Cells[1].Value + "'," + DGAddToCart.Rows[i].Cells[5].Value + "," + value1 + ")");
+
+                    }
+                    invoice1();
+                    DGAddToCart.Rows.Clear();
+                    txtInvoice.Text = "";
+                    txtchange.Text = "0.00";
+                    cash.Text = "";
+                    item.Text = "";
+                    count = 0;
+                    sum1.Text = "0.00";
+                    textBox2.Text = "";
+                    change1.Enabled = false;
+                    void1.Enabled = false;
+
+                    this.void1.BackColor = (void1.BackColor = Color.LightGray);
+                    this.change1.BackColor = (change1.BackColor = Color.LightGray);
+                    lblID.Text = db.readRecord("SELECT * FROM tbl_sales order by sales_ID desc limit 1").ToString();
+                    logout1 = 0;
+                }
+
+
+            }
+        }
+
+        void invoice1()
+        {
+
+            crvTransInvoice inv = new crvTransInvoice();
+            InvoiceForm if1 = new InvoiceForm();
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Code", typeof(string));
+            dt.Columns.Add("Title", typeof(string));
+            dt.Columns.Add("Author", typeof(string));
+            dt.Columns.Add("Edition", typeof(string));
+            dt.Columns.Add("Year", typeof(string));
+            dt.Columns.Add("Quantity", typeof(string));
+            dt.Columns.Add("Price", typeof(string));
+            dt.Columns.Add("Sub-Total", typeof(string));
+
+            //       CrystalDecisions cd = new CrystalDecisions.CrystalReports.Engine.ReportDocument();
+            TextObject total = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["total"];
+            TextObject cash1 = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["cash"];
+            TextObject change1 = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["change"];
+            TextObject customer = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["customer"];
+            TextObject cashier = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["cashier"];
+            TextObject lname = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+            TextObject receipt = (TextObject)inv.ReportDefinition.Sections["Section1"].ReportObjects["receipt"];
+            TextObject item1 = (TextObject)inv.ReportDefinition.Sections["Section4"].ReportObjects["item"];
+
+            total.Text = sum1.Text;
+            cash1.Text = cash.Text + ".00";
+            change1.Text = txtchange.Text;
+            customer.Text = cboCustomer.Text;
+            receipt.Text = txtInvoice.Text;
+            item1.Text = item.Text;
+            cashier.Text = database.read;
+            lname.Text = database.read1;
+            for (int i = 0; i < DGAddToCart.Rows.Count; i++)
+            {
+
+                dt.Rows.Add(int.Parse(DGAddToCart.Rows[i].Cells[0].Value.ToString()), DGAddToCart.Rows[i].Cells[1].Value, DGAddToCart.Rows[i].Cells[2].Value,
+                            DGAddToCart.Rows[i].Cells[3].Value, DGAddToCart.Rows[i].Cells[4].Value, DGAddToCart.Rows[i].Cells[5].Value + " pc(s)"
+                            , DGAddToCart.Rows[i].Cells[6].Value, DGAddToCart.Rows[i].Cells[7].Value);
+                inv.Database.Tables["Invoce"].SetDataSource(dt);
+                if1.crvInvoice.ReportSource = null;
+                if1.crvInvoice.ReportSource = inv;
+                inv.Refresh();
+
+            }
+            if1.ShowDialog();
+
+        }
+
+        private void cbotypeBook_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button6_Click_1(object sender, EventArgs e)
+        {
+            String nd = "Non Damage Book";
+            String d = "Damage Book";
+
+            if (cbotypeBook.Text.Equals(d))
+            {
+                dgCashier.Hide();
+                dgdamage.Show();
+                clear1();
+                add1.Text = "add to cart";
+            }
+            else if (cbotypeBook.Text.Equals(nd))
+            {
+                dgdamage.Hide();
+                dgCashier.Show();
+                clear1();
+                add1.Text = "ADD TO CART";
+
+            }
+        }
+
+        void dmagebook2()
+        {
+            String strquery = "Select Dam_Id as DBookID,Title,Author,Edition,Year,DBook_quan as QTY,MarkDown_Price as MD_Price from tbl_damagebook where Dbook_quan > 0";
+            db.displayRecords(strquery, dgdamage);
+        }
+
+
+        private void button6_MouseClick_1(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void label11_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void dgdamage_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgdamage.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+                textBox1.Text = select.Cells[5].Value.ToString();
+                price.Text = select.Cells[6].Value.ToString();
+
+                // DGAddToCart.Rows.Remove(select);
+                //   db.updateData1("UPDATE tbl_product set quantity_stock=(quantity_stock+" + quantity + ") where product_id=" + select.Cells[0].Value);
+
+                //   db.updateData1("update tbl_book set book_quan=(book_quan - " + quan.Text + ") where book_code=" + select.Cells[0].Value);
+                // db.updateData1(strq);
+
+                //  add1.Text = "ok";
+
+            }
+
+
+        }
+
+        private void label3_Paint(object sender, PaintEventArgs e)
+        {
+            dmagebook2();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //   int c = 1;
+            //    int total;
+
+            new voidForm().ShowDialog();
+
+            select = DGAddToCart.Rows[i];
+            string quantity = select.Cells[5].Value.ToString();
+            string code = select.Cells[0].Value.ToString();
+            string code1 = select.Cells[0].Value.ToString();
+
+            if (db.authenticate(voidForm.pass) == true)
+            {
+
+                db.updateData1("UPDATE tbl_book set book_quan=(book_quan+" + quantity + ") where book_code=" + code + " and book_title='" + textBox2.Text + "'");
+                db.updateData1("UPDATE tbl_damagebook set dbook_quan=(dbook_quan+" + quantity + ") where dam_id=" + code + " and title='" + textBox2.Text + "'");
+                DGAddToCart.Rows.RemoveAt(i);
+                Total();
+            }
+            void1.Enabled = false;
+            change1.Enabled = false;
+            textBox2.Text = "";
+            item.Text = "" + --count;
+
+            // count1 = count - 1;
+            this.void1.BackColor = (void1.BackColor = Color.Gray);
+            this.change1.BackColor = (change1.BackColor = Color.Gray);
+            if (DGAddToCart.Rows.Count > 0)
+            {
+                logout1++;
+            }
+            else
+            {
+                logout1 = 0;
+
+            }
+
+
+
+
+        }
+
+        private bool alreadyincart()
+        {
+            foreach (DataGridView row in DGAddToCart.Rows)
+            {
+
+                int bookID = Convert.ToInt32(dgCashier.CurrentRow.Cells[0].Value.ToString());
+                if (Convert.ToInt32(row.SelectedCells[0].Value) == bookID)
+                {
+                    MessageBox.Show("Item already Exist, Adding quantity instead");
+                    int textboxquantity = Convert.ToInt32(quan.Text);
+                    int dgvquantity = Convert.ToInt32(row.SelectedCells[6].Value.ToString());
+                    int dgvnewquantity;
+                    dgvnewquantity = dgvquantity + textboxquantity;
+                    row.SelectedCells[6].Value = dgvnewquantity;
+                    return true;
+                }
+
+
+
+            }
+
+            return false;
+        }
+
+        private void void1_MouseClick(object sender, MouseEventArgs e)
+        {
+
+
+            insertData();
+            dmagebook2();
+        }
+
+        private void addCus_Click(object sender, EventArgs e)
+        {
+            customer c = new customer();
+            c.Show();
+        }
+
+        private void subTotal_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void sum1_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cboCustomer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+        }
+
+
+
+        private void cboCustomer_MouseClick(object sender, MouseEventArgs e)
+        {
+            db.loadToComboBox("select customer_id,customer_fname,customer_fname,contact_no from tbl_customer ", cboCustomer);
+        }
+
+        private void change1_Click(object sender, EventArgs e)
+        {
+
+            // DataGridViewRow select1 = dgCashier.Rows[i];
+            DataGridViewRow select = DGAddToCart.Rows[i];
+            code.Text = select.Cells[0].Value.ToString();
+            title.Text = select.Cells[1].Value.ToString();
+            author.Text = select.Cells[2].Value.ToString();
+            edition.Text = select.Cells[3].Value.ToString();
+            year.Text = select.Cells[4].Value.ToString();
+            quan.Text = select.Cells[5].Value.ToString();
+            //textBox1.Text = select1.Cells[5].Value.ToString();
+            subTotal.Text = select.Cells[7].Value.ToString();
+            price.Text = select.Cells[6].Value.ToString();
+
+            db.updateData1("UPDATE tbl_book set book_quan=(book_quan+" + quan.Text + ") where book_code=" + code.Text + " and book_title='" + textBox2.Text + "'");
+            db.updateData1("UPDATE tbl_damagebook set dbook_quan=(dbook_quan+" + quan.Text + ") where dam_id=" + code.Text + " and title='" + textBox2.Text + "'");
+            add1.Text = "Change Quantity";
+            sum1.Text = "";
+            DGAddToCart.Rows.Remove(select);
+            void1.Enabled = false;
+            change1.Enabled = false;
+            button2.Enabled = false;
+            DGAddToCart.Enabled = false;
+            dgCashier.Enabled = false;
+            dgdamage.Enabled = false;
+            button6.Enabled = false;
+
+            String strquery = "Select Book_code as BookID, Book_title as Title, Book_author as Author, Book_edition as Edition, Book_year as Year, Book_quan as QTY, Book_price as Price from tbl_book where book_code like '%" + txtSearch.Text + "%' and book_quan > 0";
+            db.displayRecords(strquery, dgCashier);
+            this.void1.BackColor = (void1.BackColor = Color.LightGray);
+            this.change1.BackColor = (change1.BackColor = Color.LightGray);
+            this.add1.BackColor = (add1.BackColor = Color.Red);
+            if (cbotypeBook.SelectedIndex == 0)
+            {
+                try
+                {
+                    string strQuery = "SELECT * FROM tbl_book where book_code=" + code.Text + " AND book_title='" + title.Text + "'";
+                    conn = new MySqlConnection(strConn);
+                    conn.Open();
+                    da = new MySqlDataAdapter(strQuery, conn);
+
+                    dt = new DataTable();
+                    da.Fill(dt);
+                    textBox1.Text = dt.Rows[0].ItemArray[5].ToString();
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message.ToString());
+                }
+            }
+            else
+            {
+                dmagebook2();
+                damageBook();
+            }
+
+        }
+        void damageBook()
+        {
+            try
+            {
+
+
+                string strQuery1 = "SELECT * FROM tbl_damagebook where dam_id=" + code.Text + " AND title='" + title.Text + "'";
+                conn = new MySqlConnection(strConn);
+                conn.Open();
+
+                da = new MySqlDataAdapter(strQuery1, conn);
+                dt = new DataTable();
+                da.Fill(dt);
+                textBox1.Text = dt.Rows[0].ItemArray[5].ToString();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message.ToString());
+            }
+        }
+        private void dgdamage_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void groupBox2_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label14_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label14_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        /*  private void Cancel_Click(object sender, EventArgs e)
+           {
+               for (int i = 0; i < DGAddToCart.Rows.Count; i++)
+               {
+                   int quantity = int.Parse(DGAddToCart.Rows[i].Cells[5].Value.ToString());
+                   db.updateData1("UPDATE tbl_book set book_quan=(book_quan+" + quantity + ") where book_code=" + DGAddToCart.Rows[i].Cells[0].Value);
+               }
+               DGAddToCart.Rows.Clear();
+               sum1.Text= "";
+               clear1();
+               cash.Text = "";
+               txtchange.Text = "0.00";
+           }*/
+
+        private void Cancel_MouseClick(object sender, MouseEventArgs e)
+        {
+            insertData();
+        }
+
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            clear1();
+        }
+
+        private void cash_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((e.KeyChar < 48 || e.KeyChar > 57) && e.KeyChar != 8)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void cash_Leave_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void DGAddToCart_Paint(object sender, PaintEventArgs e)
+        {
+            addMInus am = new addMInus();
+            am.textBox1.Text = code.Text;
+        }
+
+
+
+        public string skipComma(string str)
+        {
+            string[] ss = null;
+            string strnew = "";
+            if (str == "")
+            {
+                strnew = "0";
+            }
+            else
+            {
+                ss = str.Split(',');
+                for (int i = 0; i < ss.Length; i++)
+                {
+                    strnew += ss[i];
+                }
+            }
+            return strnew;
+        }
+
+    }
+}
