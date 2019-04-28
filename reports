@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace cBook
+{
+    public partial class uOthers : UserControl
+    {
+        private static uOthers _instance;
+
+        public static uOthers Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new uOthers();
+                return _instance;
+            }
+        }
+        public uOthers()
+        {
+            InitializeComponent();
+        }
+       
+
+        private void uOthers_Load(object sender, EventArgs e)
+        {
+            panel1.Hide();
+            panel2.Hide();
+            panel3.Hide();
+            panel4.Hide();
+            panel5.Hide();
+            panel6.Hide();
+            panel7.Hide();
+        }
+
+
+        private void DGothers_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.btnSales .BackColor = (btnSales.BackColor = Color.Gray);
+            this.btnInHis .BackColor = (btnInHis.BackColor = Color.LightGray);        
+            this.prodHis.BackColor = (prodHis.BackColor = Color.LightGray);
+            this.product.BackColor = (product.BackColor = Color.LightGray);
+            this.btnCC.BackColor = (btnCC.BackColor = Color.LightGray);
+            panel1.Show();
+            panel2.Hide();
+            panel3.Hide();
+            panel4.Show();
+            panel5.Hide();
+            panel6.Hide();
+            panel7.Hide();
+            if (!DGothers.Controls.Contains(uSales .Instance))
+            {
+
+                DGothers.Controls.Add(uSales .Instance);
+                uSales .Instance.Dock = DockStyle.Fill;
+                uSales .Instance.BringToFront();
+            }
+            else
+            {
+                uSales .Instance.BringToFront();
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.btnSales.BackColor = (btnSales.BackColor = Color.LightGray);
+            this.btnInHis.BackColor = (btnInHis.BackColor = Color.Gray);        
+            this.prodHis.BackColor = (prodHis.BackColor = Color.LightGray);
+            this.product.BackColor = (product.BackColor = Color.LightGray);
+            this.btnCC.BackColor = (btnCC.BackColor = Color.LightGray);
+            panel1.Hide();
+            panel2.Show();
+            panel3.Hide();
+            panel4.Show();
+            panel5.Hide();
+            panel6.Hide();
+            panel7.Hide();
+            if (!DGothers.Controls.Contains(uInv_Sales .Instance))
+            {
+
+                DGothers.Controls.Add(uInv_Sales .Instance);
+                uInv_Sales .Instance.Dock = DockStyle.Fill;
+                uInv_Sales .Instance.BringToFront();
+            }
+            else
+            {
+                uInv_Sales .Instance.BringToFront();
+            }
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            this.btnSales.BackColor = (btnSales.BackColor = Color.LightGray);
+            this.btnInHis.BackColor = (btnInHis.BackColor = Color.LightGray);           
+            this.prodHis.BackColor = (prodHis.BackColor = Color.Gray);
+            this.product.BackColor = (product.BackColor = Color.LightGray);
+            this.btnCC.BackColor = (btnCC.BackColor = Color.LightGray);
+            panel1.Hide();
+            panel2.Hide();
+            panel3.Show();
+            panel4.Show();
+            panel5.Hide();
+            panel6.Hide();
+            panel7.Hide();
+            if (!DGothers.Controls.Contains(prodControlHistory.Instance))
+            {
+
+                DGothers.Controls.Add(prodControlHistory.Instance);
+                prodControlHistory.Instance.Dock = DockStyle.Fill;
+                prodControlHistory.Instance.BringToFront();
+            }
+            else
+            {
+                prodControlHistory.Instance.BringToFront();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.btnSales.BackColor = (btnSales.BackColor = Color.LightGray);
+            this.btnInHis.BackColor = (btnInHis.BackColor = Color.LightGray);
+            this.prodHis.BackColor = (prodHis.BackColor = Color.LightGray);
+            this.product.BackColor = (product.BackColor = Color.Gray);
+            this.btnCC.BackColor = (btnCC.BackColor = Color.LightGray);
+            panel1.Hide();
+            panel2.Hide();
+            panel3.Hide();
+            panel4.Show();
+            panel5.Hide();
+            panel6.Show();
+            panel7.Hide();
+            if (!DGothers.Controls.Contains(Products.Instance))
+            {
+
+                DGothers.Controls.Add(Products.Instance);
+                Products.Instance.Dock = DockStyle.Fill;
+                Products.Instance.BringToFront();
+            }
+            else
+            {
+                Products.Instance.BringToFront();
+            }
+        }
+
+        private void btnCC_Click(object sender, EventArgs e)
+        {
+            this.btnSales.BackColor = (btnSales.BackColor = Color.LightGray);
+            this.btnInHis.BackColor = (btnInHis.BackColor = Color.LightGray);
+            this.prodHis.BackColor = (prodHis.BackColor = Color.LightGray);
+            this.product.BackColor = (product.BackColor = Color.LightGray);
+            this.btnCC.BackColor = (btnCC.BackColor = Color.Gray);
+            panel1.Hide();
+            panel2.Hide();
+            panel3.Hide();
+            panel4.Show();
+            panel5.Show();
+            panel6.Hide();
+            panel7.Hide();
+            if (!DGothers.Controls.Contains(productReport.Instance))
+            {
+
+                DGothers.Controls.Add(productReport.Instance);
+                productReport.Instance.Dock = DockStyle.Fill;
+                productReport.Instance.BringToFront();
+            }
+            else
+            {
+                productReport.Instance.BringToFront();
+            }
+        }
+
+        private void button1_Click_2(object sender, EventArgs e)
+        {
+            this.btnSales.BackColor = (btnSales.BackColor = Color.LightGray);
+            this.btnInHis.BackColor = (btnInHis.BackColor = Color.LightGray);
+            this.prodHis.BackColor = (prodHis.BackColor = Color.LightGray);
+            this.product.BackColor = (product.BackColor = Color.LightGray);
+            this.btnCC.BackColor = (btnCC.BackColor = Color.LightGray);
+            this.btncustomer.BackColor = (btnCC.BackColor = Color.Gray);
+            panel1.Hide();
+            panel2.Hide();
+            panel3.Hide();
+            panel4.Show();
+            panel5.Hide();
+            panel6.Hide();
+            panel7.Show();
+            if (!DGothers.Controls.Contains(ListofCustomer.Instance))
+            {
+
+                DGothers.Controls.Add(ListofCustomer.Instance);
+                ListofCustomer.Instance.Dock = DockStyle.Fill;
+                ListofCustomer.Instance.BringToFront();
+            }
+            else
+            {
+                ListofCustomer.Instance.BringToFront();
+            }
+        }
+    }
+}
