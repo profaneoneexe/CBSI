@@ -1,0 +1,375 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Text.RegularExpressions;
+
+namespace cBook
+{
+    public partial class uMange : UserControl
+    {
+        private static uMange _instance;
+        database db = new database();
+        public static String strquery = "";
+        public static int i;
+        public static DataGridViewRow select;
+        string year1 = "none";
+        public static uMange Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new uMange();
+                return _instance;
+            }
+        }
+        public uMange()
+        {
+            InitializeComponent();
+        }
+
+        private void uMange_Load(object sender, EventArgs e)
+        {
+            db.loadToComboBox("Select category_ID,category from tbl_category", cbocategory);
+            db.loadToComboBox("Select supplier_ID,supplier from tbl_supplier", cboSupplier);
+            insert1();
+            update.Enabled = false;
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            textBox1.Hide();
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
+        public void insert1()
+        {
+            String strquery = "Select b.Book_code as Code,b.Book_title as Title,b.Book_author as Author,b.Book_Edition as Edition,b.Book_year as Year,b.Book_quan as QTY,b.Book_price as Price,s.Supplier, c.Category from tbl_book b join tbl_supplier s join tbl_category c where s.supplier_ID=b.supplier_ID and c.category_ID=b.category_ID";
+            db.displayRecords(strquery, dgManage);
+            dgManage.Columns[1].Width = 220;
+        }
+        void clear()
+        {
+            code.Text = "";
+            title.Text = "";
+            edition.Text = "";
+            year.Text = "";
+            author.Text = "";
+            cbocategory.Enabled = true;
+            cboSupplier.Enabled = true;
+            code.Enabled = true;
+            year.Enabled = true;
+        }
+
+
+
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            clear();
+            add.Enabled = true;
+            update.Enabled = false;
+            year.Enabled = true;
+            code.Enabled = true;
+            cboSupplier.Enabled = true;
+            cbocategory.Enabled = true;
+        }
+
+        private void dgManage_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+
+
+        private void label7_Paint(object sender, PaintEventArgs e)
+        {
+            insert1();
+        }
+
+        private void dgManage_CellClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+
+            int i = e.RowIndex;
+            if (i >= 0)
+            {
+                DataGridViewRow select = dgManage.Rows[i];
+                code.Text = select.Cells[0].Value.ToString();
+                title.Text = select.Cells[1].Value.ToString();
+                author.Text = select.Cells[2].Value.ToString();
+                edition.Text = select.Cells[3].Value.ToString();
+                year.Text = select.Cells[4].Value.ToString();
+                cboSupplier.Text = select.Cells[7].Value.ToString();
+                cbocategory.Text = select.Cells[8].Value.ToString();
+
+
+                add.Enabled = false;
+                code.Enabled = false;
+                update.Enabled = true;
+
+            }
+
+
+        }
+
+        private void add_Click(object sender, EventArgs e)
+        {
+            if (code.Text.Equals("") || title.Text.Equals("") || author.Text.Equals("") || year.Text.Equals(""))
+            {
+                MessageBox.Show("Please Inputs all textboxs");
+            }
+            else
+            {
+                string query = "SELECT Book_Code FROM tbl_book where Book_Code=" + code.Text;
+                string squery = "SELECT Dam_id FROM tbl_damagebook where Dam_id=" + code.Text;
+                if (db.readRecord2(query) == true && db.readRecord2(squery))
+                {
+                    MessageBox.Show("Book Code Already Exists");
+
+                }
+                else
+                {
+
+                    strquery = "Insert into tbl_book (Book_code,Book_title,Book_author,Book_Edition,Book_year,supplier_ID, category_Id) values(" + code.Text + ",'" + title.Text + "','" + author.Text + "','" + edition.Text + "','" + year.Text + "'," + cboSupplier.SelectedValue + "," + cbocategory.SelectedValue + ")";
+                    db.insertData(strquery);
+
+                    strquery = "Insert into tbl_damagebook (Dam_id,Title,Author,Edition,Year,Remarks) values(" + code.Text + ",'" + title.Text + textBox1.Text + "','" + author.Text + "','" + edition.Text + "','" + year.Text + "','" + "Damage'" + ")";
+                    db.insertData1(strquery);
+                    insert1();
+                    clear();
+                }
+            }
+        }
+
+        private void update_Click(object sender, EventArgs e)
+        {
+            if (author.Text.Equals("") || edition.Text.Equals("") || year.Text.Equals("") || cbocategory.Text.Equals("") || cboSupplier.Text.Equals(""))
+            {
+                MessageBox.Show("Please complete the details");
+
+            }
+            else
+            {
+                String strquery = "Update tbl_book set Book_title='" + title.Text + "',Book_author='" + author.Text + "',Book_Edition='" + edition.Text + "',Book_year='" + year.Text + "',category_id=" + cbocategory.SelectedValue + " where Book_code=" + code.Text;
+                db.updateData1(strquery);
+
+                String strq = "Update tbl_damagebook set Title='" + title.Text + textBox1.Text + "',Author='" + author.Text + "',Edition='" + edition.Text + "',Year='" + year.Text + "' where Dam_id=" + code.Text;
+                db.updateData1(strq);
+                insert1();
+                clear();
+                update.Enabled = false;
+                add.Enabled = true;
+            }
+
+        }
+
+        private void cancel_Click(object sender, EventArgs e)
+        {
+            clear();
+            add.Enabled = true;
+            update.Enabled = false;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Paint_1(object sender, PaintEventArgs e)
+        {
+
+            insert1();
+
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            categoryForm cf = new categoryForm();
+            cf.Show();
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void cbocategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void cbocategory_MouseClick(object sender, MouseEventArgs e)
+        {
+            db.loadToComboBox("Select category_ID,category from tbl_category", cbocategory);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            supplierForm sf = new supplierForm();
+            sf.Show();
+
+        }
+
+        private void label7_MouseClick(object sender, MouseEventArgs e)
+        {
+        }
+
+        private void label7_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void cboSupplier_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cboSupplier_MouseClick(object sender, MouseEventArgs e)
+        {
+
+            db.loadToComboBox("Select supplier_ID,supplier from tbl_supplier", cboSupplier);
+        }
+
+        private void groupBox2_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            String strquery = "Select b.Book_code,b.Book_title,b.Book_author,b.Book_Edition,b.Book_year,b.Book_quan,b.Book_price,s.Supplier, c.Category from tbl_book b join tbl_supplier s join tbl_category c where s.supplier_ID=b.supplier_ID and c.category_ID=b.category_ID and b.book_code and b.book_title like '%" + txtSearch.Text + "%'";
+            dgManage.Columns[1].Width = 220;
+            db.displayRecords(strquery, dgManage);
+        }
+
+        private void code_TextChanged(object sender, EventArgs e)
+        {
+            Invalid(code.Text, code);
+
+        }
+        void Invalid(string input, TextBox tbox)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char ch = input[i];
+                if (char.IsLetter(ch))
+                {
+                    MessageBox.Show("Input Numbers Only!");
+                    tbox.Text = "";
+                    year.Text = "";
+                }
+            }
+        }
+
+
+        private void year_TextChanged(object sender, EventArgs e)
+        {
+            if (year.Text.Length <= 0) return;
+            string s = year.Text.Substring(0, 1);
+
+            if (s != s.ToUpper())
+            {
+                int curSelStart = year.SelectionStart;
+                int curSelLength = year.SelectionLength;
+                year.SelectionStart = 0;
+                year.SelectionLength = 1;
+                year.SelectedText = s.ToUpper();
+                year.SelectionLength = curSelLength;
+            }
+        }
+
+        private void year_KeyPress(object sender, KeyPressEventArgs e)
+        {
+
+
+            if (Char.IsDigit(e.KeyChar) || e.KeyChar == 'n' || e.KeyChar == 'o' || e.KeyChar == 'e' || e.KeyChar == (char)Keys.Back)
+            {
+
+            }
+            else
+            {
+                e.Handled = true;
+            }
+
+        }
+
+        private void title_TextChanged(object sender, EventArgs e)
+        {
+            if (title.Text.Length <= 0) return;
+            string s = title.Text.Substring(0, 1);
+
+            if (s != s.ToUpper())
+            {
+                int curSelStart = title.SelectionStart;
+                int curSelLength = title.SelectionLength;
+                title.SelectionStart = 0;
+                title.SelectionLength = 1;
+                title.SelectedText = s.ToUpper();
+                title.SelectionLength = curSelLength;
+            }
+        }
+
+        private void edition_TextChanged(object sender, EventArgs e)
+        {
+            if (edition.Text.Length <= 0) return;
+            string s = edition.Text.Substring(0, 1);
+
+            if (s != s.ToUpper())
+            {
+                int curSelStart = edition.SelectionStart;
+                int curSelLength = edition.SelectionLength;
+                edition.SelectionStart = 0;
+                edition.SelectionLength = 1;
+                edition.SelectedText = s.ToUpper();
+                edition.SelectionLength = curSelLength;
+            }
+        }
+
+        private void year_KeyPress_1(object sender, KeyPressEventArgs e)
+        {
+            if (Char.IsDigit(e.KeyChar) || e.KeyChar == 'n' || e.KeyChar == 'o' || e.KeyChar == 'e' || e.KeyChar == (char)Keys.Back)
+            {
+
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void author_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar) != true && char.IsNumber(e.KeyChar) == true)
+            {
+                e.Handled = true;
+            }
+        }
+    }
+
+}
