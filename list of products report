@@ -1,0 +1,156 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+
+namespace cBook
+{
+    public partial class Products : UserControl
+    {
+        database db = new database();
+        private static Products _instance;
+        public static Products Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new Products();
+                return _instance;
+            }
+        }
+        public Products()
+        {
+            InitializeComponent();
+        }
+
+        private void Products_Load(object sender, EventArgs e)
+        {
+            db.loadToComboBox("select * from tbl_typebook",cboBook);
+            dgProducts.Show();
+            dgProdDam.Hide();
+            print1.Show();
+            print2.Hide();
+            dgprod1();
+            dgprod2();
+            dgProducts.Columns[1].Width = 250;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        void dgprod1()
+        {
+            string str2 = "Select book_code as Code,book_title as Title,Book_author as Author,Book_edition as Edition,book_year as Year,book_quan as Quantity,book_price as Price from tbl_book";
+            db.displayRecords(str2, dgProducts);
+        }
+        private void label1_Paint(object sender, PaintEventArgs e)
+        {
+            dgprod1();
+        }
+
+        private void print_Click(object sender, EventArgs e)
+        {
+            ProductlistReport s = new ProductlistReport();
+            ListOfAllProduct f = new ListOfAllProduct();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Code", typeof(string));
+            dt.Columns.Add("Title", typeof(string));
+            dt.Columns.Add("Author", typeof(string));
+            dt.Columns.Add("Edition", typeof(string));
+            dt.Columns.Add("Year", typeof(string));
+            dt.Columns.Add("Quantity", typeof(string));
+            dt.Columns.Add("Price", typeof(string));
+
+              TextObject fname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["fname"];
+              TextObject lname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+
+
+              fname.Text = database.read;
+              lname.Text = database.read1;
+            //  totalsales.Text = "";
+            for (int i = 0; i < dgProducts.Rows.Count; i++)
+            {
+                dt.Rows.Add(dgProducts.Rows[i].Cells[0].Value, dgProducts.Rows[i].Cells[1].Value, dgProducts.Rows[i].Cells[2].Value,
+                 dgProducts.Rows[i].Cells[3].Value, dgProducts.Rows[i].Cells[4].Value, dgProducts.Rows[i].Cells[5].Value, dgProducts.Rows[i].Cells[6].Value);
+                s.Database.Tables["ListofProduct"].SetDataSource(dt);
+                f.crystalProducts.ReportSource = null;
+                f.crystalProducts.ReportSource = s;
+                s.Refresh();
+            }
+            f.ShowDialog();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            String nd = "Non Damage Book";
+            String d = "Damage Book";
+
+            if (cboBook.Text.Equals(nd))
+            {
+                dgProducts.Show();
+                dgProdDam.Hide();
+                print1.Show();
+                print2.Hide();
+                dgProducts.Columns[1].Width = 250;
+            }
+            else if (cboBook.Text.Equals(d))
+            {
+                dgProducts.Hide();
+                dgProdDam.Show();
+                print1.Hide();
+                print2.Show();
+                dgProdDam.Columns[1].Width = 250;
+            }
+        }
+        void dgprod2()
+        {
+            string str3 = "Select dam_id as Code,Title,Author,Edition,Year,dbook_quan as Quantity,markdown_price as Price from tbl_damagebook";
+            db.displayRecords(str3, dgProdDam);
+        }
+        private void label2_Paint(object sender, PaintEventArgs e)
+        {
+            dgprod2();
+        }
+
+        private void print2_Click(object sender, EventArgs e)
+        {
+            ProductlistReport1 s = new ProductlistReport1();
+            ListOfAllProduct1 f = new ListOfAllProduct1();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Code", typeof(string));
+            dt.Columns.Add("Title", typeof(string));
+            dt.Columns.Add("Author", typeof(string));
+            dt.Columns.Add("Edition", typeof(string));
+            dt.Columns.Add("Year", typeof(string));
+            dt.Columns.Add("Quantity", typeof(string));
+            dt.Columns.Add("Price", typeof(string));
+
+            TextObject fname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["fname"];
+            TextObject lname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+
+
+            fname.Text = database.read;
+            lname.Text = database.read1;
+            for (int i = 0; i < dgProdDam.Rows.Count; i++)
+            {
+                dt.Rows.Add(dgProdDam.Rows[i].Cells[0].Value, dgProdDam.Rows[i].Cells[1].Value, dgProdDam.Rows[i].Cells[2].Value,
+                 dgProdDam.Rows[i].Cells[3].Value, dgProdDam.Rows[i].Cells[4].Value, dgProdDam.Rows[i].Cells[5].Value, dgProdDam.Rows[i].Cells[6].Value);
+                s.Database.Tables["ListofProductDamage"].SetDataSource(dt);
+                f.crystalRep1.ReportSource = null;
+                f.crystalRep1.ReportSource = s;
+                s.Refresh();
+            }
+            f.ShowDialog();
+        }
+    }
+}
