@@ -1,0 +1,96 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Threading;
+namespace cBook
+{
+    public partial class Restore : Form
+    {
+
+        database db = new database();
+        public Restore()
+        {
+            InitializeComponent();
+        }
+
+        struct DataParameter
+        {
+            public int process;
+            public int delay;
+        }
+        private DataParameter _inputParameter;
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog();
+            if (open.ShowDialog() == DialogResult.OK)
+            {
+                string path = open.FileName;
+                textBox2.Text = path;
+                button1.Enabled = true;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (!backgroundWorker1.IsBusy)
+            {
+                _inputParameter.delay = 10;
+                _inputParameter.process = 300;
+                backgroundWorker1.RunWorkerAsync(_inputParameter);
+            }
+            db.restore(textBox2.Text);
+
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            int process = ((DataParameter)e.Argument).process;
+            int delay = ((DataParameter)e.Argument).delay;
+            int index = 1;
+            try
+            {
+                for (int i = 0; i < process; i++)
+                {
+                    if (!backgroundWorker1.CancellationPending)
+                    {
+                        backgroundWorker1.ReportProgress(index++ * 100 / process, string.Format("Process data(0)", 1));
+                        Thread.Sleep(delay);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                backgroundWorker1.CancelAsync();
+            }
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progressBar1.Value = e.ProgressPercentage;
+            progressBar1.Update();
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MessageBox.Show("Restoring Database Completed.....");
+            this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
+
+        private void Restore_Load(object sender, EventArgs e)
+        {
+            button1.Enabled = false;
+        }
+    }
+}
