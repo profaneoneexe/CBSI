@@ -1,0 +1,225 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CrystalDecisions.CrystalReports.Engine;
+
+namespace cBook
+{
+    public partial class productReport : UserControl
+    {
+        database db = new database();
+        private static productReport _instance;
+        public static productReport Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new productReport();
+                return _instance;
+            }
+        }
+        public productReport()
+        {
+            InitializeComponent();
+        }
+
+        private void productReport_Load(object sender, EventArgs e)
+        {
+            db.loadToComboBox("Select * from tbl_customer",cboCustomer);
+            db.loadToComboBox("Select * from tbl_cashier", cboCashier);
+        
+            dgCustomer .Enabled = false;
+            dgCashier.Enabled = false;
+            btnCas.Enabled = false;
+            btnCus.Enabled = false;
+            cboCashier.Enabled = false;
+            cboCustomer.Enabled = false;
+            print1.Enabled = false;
+            print2.Enabled = false;
+            totalsales1.Enabled = false;
+            totalsales2.Enabled = false;
+
+        }
+
+        private void btnCus_Click(object sender, EventArgs e)
+        {
+            String str1 = "select c.Invoice_No,cus.customer_fname as Customer,c.totalsales as Total_Sold,c.sales_date as Date_Sold from tbl_sales c join tbl_customer cus where cus.customer_id=c.customer_id and c.customer_id="+cboCustomer.SelectedValue+"";
+            db.displayRecords(str1, dgCustomer);
+            decimal total = 0;
+            //  decimal totalsales = 0;
+            for (int i = 0; i < dgCustomer.Rows.Count; i++)
+            {
+
+                decimal ts = decimal.Parse(dgCustomer.Rows[i].Cells[2].Value.ToString());
+
+                decimal ts1 = total + ts;
+                total = ts1;
+                totalsales1.Text = "" + ts1;
+                string hold = string.Format("{0:n}", total);
+                totalsales1.Text = hold;
+                //  btnprint.Enabled = true;
+
+            }
+        }
+
+        private void dgCashier_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void btnCas_Click(object sender, EventArgs e)
+        {
+            String str1 = "select c.Invoice_No,cus.customer_fname as Customer,c.totalsales as Total_Sold,c.sales_date as Date_Sold from tbl_sales c join tbl_customer cus where cus.customer_id=c.customer_id and c.cashier_id=" + cboCashier.SelectedValue + "";
+            db.displayRecords(str1, dgCashier);
+            decimal total = 0;
+            //  decimal totalsales = 0;
+            for (int i = 0; i < dgCashier.Rows.Count; i++)
+            {
+
+                decimal ts = decimal.Parse(dgCashier.Rows[i].Cells[2].Value.ToString());
+
+                decimal ts1 = total + ts;
+                total = ts1;
+                totalsales2.Text = "" + ts1;
+                string hold = string.Format("{0:n}", total);
+                totalsales2.Text = hold;
+                //  btnprint.Enabled = true;
+
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            cashierReport  s = new cashierReport ();
+            CashierForm  f = new CashierForm ();
+
+            DataTable dt = new DataTable();
+
+            dt.Columns.Add("Invoice_No", typeof(string));
+            dt.Columns.Add("Customer", typeof(string));
+            dt.Columns.Add("Total_Sold", typeof(string));
+            dt.Columns.Add("Date_Sold", typeof(string));
+
+
+            TextObject total = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["total"];
+
+            TextObject cashier = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["cashier"];
+         
+            total.Text = totalsales2.Text;
+            cashier.Text = cboCashier.Text;
+            for (int i = 0; i < dgCashier .Rows.Count; i++)
+            {
+                dt.Rows.Add(dgCashier .Rows[i].Cells[0].Value, dgCashier.Rows[i].Cells[1].Value, dgCashier.Rows[i].Cells[2].Value,
+                 dgCashier.Rows[i].Cells[3].Value);
+                s.Database.Tables["CashierTable"].SetDataSource(dt);
+                f.crvCashier .ReportSource = null;
+                f.crvCashier .ReportSource = s;
+                s.Refresh();
+            }
+            f.ShowDialog();
+
+        }
+
+        private void btncus1_Click(object sender, EventArgs e)
+        {
+            this.btncus1.BackColor = (btncus1.BackColor = Color.Gray);
+            this.btncas1.BackColor = (btncas1.BackColor = Color.LightGray);
+
+            String str1 = "select c.Invoice_No,cus.customer_fname as Customer,c.totalsales as Total_Sold,c.sales_date as Date_Sold from tbl_sales c join tbl_customer cus where cus.customer_id=c.customer_id and c.cashier_id=111512541";
+            db.displayRecords(str1, dgCashier);
+
+            totalsales2.Text = "";
+
+            dgCustomer.Enabled = true;
+            cboCustomer.Enabled = true;
+            print1.Enabled = true;
+            btnCus .Enabled = true;
+            totalsales1.Enabled = true;
+
+            dgCashier.Enabled = false;
+            cboCashier.Enabled = false;
+            print2.Enabled = false;
+            btnCas.Enabled = false;
+            totalsales2.Enabled = false;
+        }
+
+        private void btncas1_Click(object sender, EventArgs e)
+        {
+            this.btncus1.BackColor = (btncus1.BackColor = Color.LightGray);
+            this.btncas1.BackColor = (btncas1.BackColor = Color.Gray);
+            String str1 = "select c.Invoice_No,cus.customer_fname as Customer,c.totalsales as Total_Sold,c.sales_date as Date_Sold from tbl_sales c join tbl_customer cus where cus.customer_id=c.customer_id and c.cashier_id=0010101";
+            db.displayRecords(str1, dgCustomer);
+
+            totalsales1.Text = "";
+            dgCustomer.Enabled = false ;
+            cboCustomer.Enabled = false ;
+            print1.Enabled = false ;
+            btnCus.Enabled = false ;
+            totalsales1.Enabled = false;
+
+            dgCashier.Enabled = true ;
+            cboCashier.Enabled = true ;
+            print2.Enabled = true ;
+            btnCas.Enabled = true ;
+            totalsales2.Enabled = true;
+        }
+
+        private void print1_Click(object sender, EventArgs e)
+        {
+            CustomerReports  s = new CustomerReports();
+            CustomerForm f = new CustomerForm();
+
+            DataTable dt = new DataTable();
+           
+            dt.Columns.Add("Invoice_No", typeof(string));
+            dt.Columns.Add("Customer", typeof(string));
+            dt.Columns.Add("Total_Sold", typeof(string));
+            dt.Columns.Add("Date_Sold", typeof(string));
+           
+
+            TextObject total = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["total"];
+            //  TextObject dateto = (TextObject)s.ReportDefinition.Sections["Section2"].ReportObjects["dateto1"];
+               TextObject cashier = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["cashier"];
+            //  TextObject totalsales1 = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["totalsales"];
+            //  TextObject lname = (TextObject)s.ReportDefinition.Sections["Section4"].ReportObjects["lname"];
+            total.Text = totalsales1.Text;
+            cashier.Text = cboCustomer.Text;
+            for (int i = 0; i < dgCustomer.Rows.Count; i++)
+            {
+                dt.Rows.Add(dgCustomer.Rows[i].Cells[0].Value, dgCustomer.Rows[i].Cells[1].Value, dgCustomer.Rows[i].Cells[2].Value,
+                 dgCustomer.Rows[i].Cells[3].Value);
+                s.Database.Tables["CustomerTable"].SetDataSource(dt);
+                f.crvCustomer .ReportSource = null;
+                f.crvCustomer .ReportSource = s;
+                s.Refresh();
+            }
+            f.ShowDialog();
+        }
+
+        private void cboCustomer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+         
+        }
+
+        private void totalsales1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void totalsales2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
